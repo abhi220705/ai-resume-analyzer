@@ -1,11 +1,20 @@
 import type { Metadata } from "next";
+import { AuthProvider } from "@/components/auth-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Resume Analyzer | Phase 1",
-  description: "Development setup for the AI Resume Analyzer & Job Match Platform.",
+  title: "AI Resume Analyzer",
+  description: "Resume analysis and job matching for candidates and recruiters.",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en">
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
+    </html>
+  );
 }
