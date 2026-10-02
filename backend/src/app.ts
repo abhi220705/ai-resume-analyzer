@@ -1,3 +1,4 @@
+import { profileRouter } from "./routes/profile.routes.js";
 import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -25,6 +26,7 @@ export function createApp(frontendOrigin: string) {
 
   app.use("/api/health", healthRouter);
   app.use("/api/auth", authRouter);
+  app.use("/api/profile", profileRouter);
 
   app.use((_request, response) => {
     response.status(404).json({
