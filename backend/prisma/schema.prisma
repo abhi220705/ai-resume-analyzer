@@ -22,7 +22,7 @@ model User {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   refreshSessions RefreshSession[]
-
+profile CandidateProfile?
   @@map("users")
 }
 
@@ -40,4 +40,21 @@ model RefreshSession {
   @@index([userId])
   @@index([expiresAt])
   @@map("refresh_sessions")
+}
+model CandidateProfile {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @unique @db.Uuid
+  phone      String?  @db.VarChar(20)
+  location   String?  @db.VarChar(150)
+  headline   String?  @db.VarChar(150)
+  bio        String?  @db.VarChar(1000)
+  education  String?  @db.VarChar(500)
+  experience String?  @db.VarChar(1000)
+  skills     String[] @default([])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("candidate_profiles")
 }
