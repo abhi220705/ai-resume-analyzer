@@ -10,3 +10,5 @@ backend/storage/
 *.log
 .DS_Store
 Thumbs.db
+# Prisma Client is recreated with prisma generate
+/backend/src/generated/prisma/
