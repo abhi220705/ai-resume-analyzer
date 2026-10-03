@@ -48,12 +48,21 @@ export async function apiRequest<T>(
 
   const headers = new Headers(options.headers);
 
-  if (options.body !== undefined) {
-    headers.set("Content-Type", "application/json");
-  }
+const isFormData =
+  typeof FormData !== "undefined" &&
+  options.body instanceof FormData;
+
+if (isFormData) {
+  headers.delete("Content-Type");
+} else if (options.body !== undefined) {
+  headers.set("Content-Type", "application/json");
+}
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+ const timeout = setTimeout(
+  () => controller.abort(),
+  isFormData ? 60000 : 15000,
+);
 
   try {
     const response = await fetch(

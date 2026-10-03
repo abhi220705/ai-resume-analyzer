@@ -1,5 +1,7 @@
 "use client";
 
+import { ResumeUpload } from "@/components/resume-upload";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
@@ -337,6 +339,9 @@ export default function DashboardPage() {
           </form>
         )}
       </section>
+      {user.role === "CANDIDATE" && (
+  <ResumeUpload key={user.id} />
+)}
     </main>
   );
 }
