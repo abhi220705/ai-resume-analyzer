@@ -12,3 +12,4 @@ backend/storage/
 Thumbs.db
 # Prisma Client is recreated with prisma generate
 /backend/src/generated/prisma/
+/backend/storage/

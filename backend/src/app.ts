@@ -1,3 +1,4 @@
+import { resumeRouter } from "./routes/resume.routes.js";
 import { profileRouter } from "./routes/profile.routes.js";
 import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
@@ -27,6 +28,7 @@ export function createApp(frontendOrigin: string) {
   app.use("/api/health", healthRouter);
   app.use("/api/auth", authRouter);
   app.use("/api/profile", profileRouter);
+  app.use("/api/resumes", resumeRouter);
 
   app.use((_request, response) => {
     response.status(404).json({
