@@ -45,3 +45,51 @@ export async function saveResumeFile(buffer: Buffer): Promise<string> {
 export async function removeResumeFile(storageKey: string): Promise<void> {
   await rm(getStoragePath(storageKey), { force: true });
 }
+export async function readResumeFile(
+  storageKey: string,
+  expectedSize: number,
+): Promise<Buffer> {
+  const handle = await open(getStoragePath(storageKey), "r");
+
+  try {
+    const stats = await handle.stat();
+
+    if (
+      !stats.isFile() ||
+      stats.size !== expectedSize ||
+      stats.size < 1 ||
+      stats.size > 5 * 1024 * 1024
+    ) {
+      throw new Error("Stored resume size is invalid.");
+    }
+
+    const buffer = Buffer.alloc(stats.size);
+    let offset = 0;
+
+    while (offset < buffer.length) {
+      const { bytesRead } = await handle.read(
+        buffer,
+        offset,
+        buffer.length - offset,
+        offset,
+      );
+
+      if (bytesRead === 0) {
+        throw new Error("The stored resume is incomplete.");
+      }
+
+      offset += bytesRead;
+    }
+
+    const extra = Buffer.alloc(1);
+    const { bytesRead } = await handle.read(extra, 0, 1, offset);
+
+    if (bytesRead !== 0) {
+      throw new Error("The stored resume changed while being read.");
+    }
+
+    return buffer;
+  } finally {
+    await handle.close();
+  }
+}
