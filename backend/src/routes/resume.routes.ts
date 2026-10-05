@@ -1,3 +1,8 @@
+import {
+  analyzeResumeText,
+  ANALYSIS_ENGINE_VERSION,
+  hashResumeText,
+} from "../lib/resume-analysis.js";
 import { randomUUID } from "node:crypto";
 import { Router, type Response } from "express";
 import { rateLimit } from "express-rate-limit";
@@ -336,6 +341,140 @@ resumeRouter.post(
           ? "No embedded text was found. This PDF may require OCR."
           : "Resume text extracted successfully.",
       data: { resume },
+    });
+  },
+);
+const analysisLimiter = createLimiter(
+  20,
+  "Too many analysis attempts. Try again later.",
+);
+
+const analysisSelect = {
+  id: true,
+  resumeId: true,
+  engineVersion: true,
+  overallScore: true,
+  wordCount: true,
+  detectedSkills: true,
+  report: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+// Retrieve a saved analysis only when it matches the current text and rules.
+resumeRouter.get("/:resumeId/analysis", async (request, response) => {
+  const userId = response.locals.auth.user.id as string;
+  const resumeId = request.params.resumeId as string;
+
+  const resume = await prisma.resume.findFirst({
+    where: { id: resumeId, userId },
+    select: {
+      parseStatus: true,
+      extractedText: true,
+      analysis: {
+        select: {
+          ...analysisSelect,
+          sourceTextHash: true,
+        },
+      },
+    },
+  });
+
+  if (!resume) {
+    sendError(response, 404, "Resume not found.");
+    return;
+  }
+
+  const saved = resume.analysis;
+
+  const isCurrent =
+    saved !== null &&
+    resume.parseStatus === "COMPLETED" &&
+    Boolean(resume.extractedText?.trim()) &&
+    saved.engineVersion === ANALYSIS_ENGINE_VERSION &&
+    saved.sourceTextHash === hashResumeText(resume.extractedText ?? "");
+
+  if (!saved || !isCurrent) {
+    response.status(200).json({
+      success: true,
+      message: saved
+        ? "Run analysis again to update this result."
+        : "This resume has not been analyzed yet.",
+      data: {
+        analysis: null,
+        needsAnalysis: true,
+      },
+    });
+    return;
+  }
+
+  const { sourceTextHash, ...analysis } = saved;
+
+  response.status(200).json({
+    success: true,
+    message: "Saved analysis retrieved successfully.",
+    data: {
+      analysis,
+      needsAnalysis: false,
+    },
+  });
+});
+
+// Analyze only a resume owned by the signed-in candidate.
+resumeRouter.post(
+  "/:resumeId/analysis",
+  analysisLimiter,
+  async (request, response) => {
+    const userId = response.locals.auth.user.id as string;
+    const resumeId = request.params.resumeId as string;
+
+    const resume = await prisma.resume.findFirst({
+      where: { id: resumeId, userId },
+      select: {
+        id: true,
+        parseStatus: true,
+        extractedText: true,
+      },
+    });
+
+    if (!resume) {
+      sendError(response, 404, "Resume not found.");
+      return;
+    }
+
+    if (
+      resume.parseStatus !== "COMPLETED" ||
+      !resume.extractedText?.trim()
+    ) {
+      sendError(
+        response,
+        409,
+        "Extract readable resume text before running analysis.",
+      );
+      return;
+    }
+
+    if (resume.extractedText.length > 100_000) {
+      sendError(response, 422, "Resume text exceeds the analysis limit.");
+      return;
+    }
+
+    const result = analyzeResumeText(resume.extractedText);
+
+    const analysis = await prisma.resumeAnalysis.upsert({
+      where: { resumeId: resume.id },
+      create: {
+        resumeId: resume.id,
+        ...result,
+      },
+      update: result,
+      select: analysisSelect,
+    });
+
+    response.status(200).json({
+      success: true,
+      message: "Resume analysis completed successfully.",
+      data: { analysis },
     });
   },
 );
