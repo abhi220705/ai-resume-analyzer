@@ -1,37 +1,71 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { authenticatedRequest } from "@/lib/api";
+
+type ParseStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "COMPLETED"
+  | "NO_TEXT"
+  | "FAILED";
 
 type ResumeItem = {
   id: string;
   originalName: string;
   sizeBytes: number;
   createdAt: string;
+  parseStatus: ParseStatus;
+  pageCount: number | null;
+  parseError: string | null;
 };
 
-const MAX_RESUME_BYTES = 5 * 1024 * 1024;
+type ResumeDetail = ResumeItem & {
+  extractedText: string | null;
+};
+
+const statusLabels: Record<ParseStatus, string> = {
+  PENDING: "Ready to extract",
+  PROCESSING: "Processing",
+  COMPLETED: "Text extracted",
+  NO_TEXT: "No embedded text",
+  FAILED: "Extraction failed",
+};
+
+const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
 export function ResumeUpload() {
   const [resumes, setResumes] = useState<ResumeItem[]>([]);
+  const [selected, setSelected] = useState<ResumeDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
+  const [busy, setBusy] = useState("");
   const [loadError, setLoadError] = useState("");
-  const [uploadError, setUploadError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+
+  const actionRunning = useRef(false);
+  const disabled = loading || busy !== "";
 
   useEffect(() => {
     let active = true;
 
-    authenticatedRequest<{ resumes: ResumeItem[] }>("/api/resumes")
-      .then((data) => {
+    async function loadResumes() {
+      try {
+        const data = await authenticatedRequest<{
+          resumes: ResumeItem[];
+        }>("/api/resumes");
+
         if (active) {
           setResumes(data.resumes);
           setLoadError("");
         }
-      })
-      .catch((error: unknown) => {
+      } catch (error) {
         if (active) {
           setLoadError(
             error instanceof Error
@@ -39,12 +73,12 @@ export function ResumeUpload() {
               : "Could not load your resumes.",
           );
         }
-      })
-      .finally(() => {
-        if (active) {
-          setLoading(false);
-        }
-      });
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    void loadResumes();
 
     return () => {
       active = false;
@@ -54,107 +88,166 @@ export function ResumeUpload() {
   function refreshList() {
     setLoading(true);
     setLoadError("");
-    setReloadKey((current) => current + 1);
+    setReloadKey((value) => value + 1);
   }
 
   async function handleUpload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (uploading || loading || loadError) return;
+    if (actionRunning.current || loading || loadError) return;
 
-    setUploadError("");
-    setSuccess("");
+    setError("");
+    setMessage("");
 
     const form = event.currentTarget;
     const body = new FormData(form);
     const file = body.get("resume");
 
     if (!(file instanceof File) || file.size === 0) {
-      setUploadError("Please select a non-empty PDF file.");
+      setError("Please choose a non-empty PDF.");
       return;
     }
 
     if (!file.name.toLowerCase().endsWith(".pdf")) {
-      setUploadError("Please select a PDF file.");
+      setError("Please choose a PDF file.");
       return;
     }
 
-    if (file.size > MAX_RESUME_BYTES) {
-      setUploadError("The PDF must be 5 MiB or smaller.");
+    if (file.size > MAX_FILE_BYTES) {
+      setError("The PDF must be 5 MiB or smaller.");
       return;
     }
 
-    setUploading(true);
+    actionRunning.current = true;
+    setBusy("upload");
 
     try {
-      const data = await authenticatedRequest<{ resume: ResumeItem }>(
-        "/api/resumes",
-        {
-          method: "POST",
-          body,
-        },
-      );
+      const data = await authenticatedRequest<{
+        resume: ResumeItem;
+      }>("/api/resumes", {
+        method: "POST",
+        body,
+      });
 
       setResumes((current) =>
         [
           data.resume,
-          ...current.filter((resume) => resume.id !== data.resume.id),
+          ...current.filter((item) => item.id !== data.resume.id),
         ].slice(0, 50),
       );
 
       form.reset();
-      setSuccess("Resume uploaded successfully.");
+      setSelected(null);
+      setMessage("Resume uploaded. Click Extract text to process it.");
     } catch (error) {
-      setUploadError(
-        error instanceof Error
-          ? error.message
-          : "Upload failed. Please try again.",
+      setError(
+        error instanceof Error ? error.message : "Upload failed.",
       );
     } finally {
-      setUploading(false);
+      actionRunning.current = false;
+      setBusy("");
+    }
+  }
+
+  async function handleResumeAction(
+    resumeId: string,
+    action: "parse" | "view",
+  ) {
+    if (actionRunning.current || loading) return;
+
+    actionRunning.current = true;
+    setBusy(`${action}:${resumeId}`);
+    setError("");
+    setMessage("");
+    setSelected(null);
+
+    try {
+      const path = `/api/resumes/${encodeURIComponent(resumeId)}`;
+
+      const data =
+        action === "parse"
+          ? await authenticatedRequest<{ resume: ResumeDetail }>(
+              `${path}/parse`,
+              {
+                method: "POST",
+                body: JSON.stringify({}),
+              },
+            )
+          : await authenticatedRequest<{ resume: ResumeDetail }>(path);
+
+      setSelected(data.resume);
+      setResumes((current) =>
+        current.map((item) =>
+          item.id === data.resume.id ? data.resume : item,
+        ),
+      );
+
+      if (action === "parse") {
+        setMessage(
+          data.resume.parseStatus === "NO_TEXT"
+            ? "No embedded text was found. This PDF may require OCR."
+            : "Text extracted and saved successfully.",
+        );
+      }
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Could not process this resume.",
+      );
+
+      // Reload saved status after a failure or interrupted request.
+      refreshList();
+    } finally {
+      actionRunning.current = false;
+      setBusy("");
     }
   }
 
   return (
-    <section
-      aria-labelledby="resume-heading"
-      className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 id="resume-heading" className="text-2xl font-bold">
-          Your resumes
-        </h2>
+    <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <h2 className="text-2xl font-bold">Your resumes</h2>
 
         <button
           type="button"
-          onClick={refreshList}
-          disabled={loading || uploading}
-          className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-100 disabled:opacity-60"
+          disabled={disabled}
+          onClick={() => {
+            setError("");
+            setMessage("");
+            setSelected(null);
+            refreshList();
+          }}
+          className="rounded-xl border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50 disabled:opacity-50"
         >
-          {loading ? "Loading..." : "Refresh list"}
+          Refresh list
         </button>
-      </div>
+      </header>
 
-      {loadError && (
+      <p className="mt-3 text-sm leading-6 text-slate-600">
+        Upload a PDF up to 5 MiB. Text extraction supports up to
+        10 pages and 100,000 characters.
+      </p>
+
+      {(loadError || error) && (
         <p role="alert" className="mt-4 rounded-xl bg-red-50 p-4 text-red-700">
-          {loadError} Use Refresh list to try again.
+          {loadError || error}
         </p>
       )}
 
-      <form
-        onSubmit={handleUpload}
-        aria-busy={uploading}
-        className="mt-6"
-      >
+      {message && (
+        <p role="status" className="mt-4 rounded-xl bg-emerald-50 p-4 text-emerald-800">
+          {message}
+        </p>
+      )}
+
+      <form onSubmit={handleUpload} className="mt-6">
         <fieldset
-          disabled={loading || uploading || Boolean(loadError)}
-          className="space-y-4"
+          disabled={disabled || Boolean(loadError)}
+          className="flex flex-wrap items-end gap-4"
         >
-          <div>
-            <label
-              htmlFor="resume-file"
-              className="block text-sm font-semibold"
-            >
+          <div className="min-w-0 flex-1">
+            <label htmlFor="resume-file" className="block font-semibold">
               Choose your resume
             </label>
 
@@ -164,67 +257,150 @@ export function ResumeUpload() {
               type="file"
               accept=".pdf,application/pdf"
               required
-              aria-describedby="resume-file-help"
               onChange={() => {
-                setUploadError("");
-                setSuccess("");
+                setError("");
+                setMessage("");
               }}
-              className="mt-2 block w-full rounded-xl border border-slate-300 p-3 text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:font-semibold file:text-indigo-700 disabled:opacity-60"
+              className="mt-2 block w-full rounded-xl border border-slate-300 p-3 text-sm"
             />
-
-            <p id="resume-file-help" className="mt-2 text-sm text-slate-600">
-              PDF only. Maximum size: 5 MiB.
-            </p>
           </div>
 
           <button
             type="submit"
-            className="rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
           >
-            {uploading ? "Uploading..." : "Upload resume"}
+            {busy === "upload" ? "Uploading..." : "Upload resume"}
           </button>
         </fieldset>
       </form>
 
-      {uploadError && (
-        <p role="alert" className="mt-4 rounded-xl bg-red-50 p-4 text-red-700">
-          {uploadError}
-        </p>
-      )}
-
-      {success && (
-        <p
-          role="status"
-          className="mt-4 rounded-xl bg-emerald-50 p-4 text-emerald-800"
-        >
-          {success}
-        </p>
-      )}
-
-      <h3 className="mt-8 font-semibold">Recent uploads</h3>
+      <h3 className="mt-8 text-lg font-semibold">Recent uploads</h3>
 
       {loading ? (
-        <p role="status" className="mt-3 text-slate-600">
-          Loading your resumes...
+        <p role="status" className="mt-4 text-slate-600">
+          Loading resumes...
         </p>
-      ) : !loadError && resumes.length === 0 ? (
-        <p className="mt-3 text-slate-600">
+      ) : loadError ? (
+        <p className="mt-4 text-slate-600">
+          Click Refresh list to try again.
+        </p>
+      ) : resumes.length === 0 ? (
+        <p className="mt-4 text-slate-600">
           You have not uploaded a resume yet.
         </p>
-      ) : !loadError ? (
-        <ul className="mt-3 divide-y divide-slate-200">
+      ) : (
+        <ul className="mt-4 space-y-4">
           {resumes.map((resume) => (
-            <li key={resume.id} className="py-4">
-              <p className="break-all font-medium">{resume.originalName}</p>
-              <p className="mt-1 text-sm text-slate-600">
-                {Math.ceil(resume.sizeBytes / 1024)} KiB
-                {" | "}
-                {new Date(resume.createdAt).toLocaleDateString()}
+            <li
+              key={resume.id}
+              className="rounded-2xl border border-slate-200 p-5"
+            >
+              <p className="break-words font-semibold">
+                {resume.originalName}
               </p>
+
+              <p className="mt-1 text-sm text-slate-500">
+                {Math.ceil(resume.sizeBytes / 1024)} KiB
+                {" · "}
+                {new Date(resume.createdAt).toLocaleDateString()}
+                {resume.pageCount !== null &&
+                  ` · ${resume.pageCount} page(s)`}
+              </p>
+
+              <p className="mt-2 text-sm font-semibold text-indigo-700">
+                {busy === `parse:${resume.id}`
+                  ? "Extracting text..."
+                  : statusLabels[resume.parseStatus]}
+              </p>
+
+              {resume.parseError && (
+                <p className="mt-2 text-sm text-red-700">
+                  {resume.parseError}
+                </p>
+              )}
+
+              {resume.parseStatus === "NO_TEXT" && (
+                <p className="mt-2 text-sm text-slate-600">
+                  This PDF may contain scanned images. OCR support
+                  will be added in a later phase.
+                </p>
+              )}
+
+              {resume.parseStatus === "PROCESSING" && (
+                <p className="mt-2 text-sm text-slate-600">
+                  Refresh to check progress. If processing was
+                  interrupted, retry after one minute.
+                </p>
+              )}
+
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  disabled={disabled || resume.parseStatus === "COMPLETED"}
+                  onClick={() => void handleResumeAction(resume.id, "parse")}
+                  className="rounded-xl bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {busy === `parse:${resume.id}`
+                    ? "Extracting..."
+                    : resume.parseStatus === "FAILED" ||
+                        resume.parseStatus === "PROCESSING"
+                      ? "Retry extraction"
+                      : "Extract text"}
+                </button>
+
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => void handleResumeAction(resume.id, "view")}
+                  className="rounded-xl border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50 disabled:opacity-50"
+                >
+                  {busy === `view:${resume.id}` ? "Loading..." : "View text"}
+                </button>
+              </div>
             </li>
           ))}
         </ul>
-      ) : null}
+      )}
+
+      {selected && (
+        <section
+          aria-label="Extracted resume text"
+          className="mt-8 rounded-2xl border border-indigo-200 bg-indigo-50 p-5"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h3 className="font-bold">Extracted text</h3>
+              <p className="mt-1 break-words text-sm text-slate-600">
+                {selected.originalName}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSelected(null)}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-sm"
+            >
+              Close
+            </button>
+          </div>
+
+          {selected.parseStatus === "COMPLETED" ? (
+            <pre className="mt-4 max-h-96 overflow-y-auto whitespace-pre-wrap break-words rounded-xl bg-white p-4 font-mono text-sm leading-6 text-slate-800">
+              {selected.extractedText}
+            </pre>
+          ) : (
+            <p className="mt-4 text-sm leading-6 text-slate-700">
+              {selected.parseStatus === "NO_TEXT"
+                ? "No embedded text was found. OCR may be required."
+                : selected.parseStatus === "FAILED"
+                  ? selected.parseError || "Extraction failed. Please retry."
+                  : selected.parseStatus === "PROCESSING"
+                    ? "Extraction is processing. Refresh the list shortly."
+                    : "Click Extract text to process this resume first."}
+            </p>
+          )}
+        </section>
+      )}
     </section>
   );
 }
