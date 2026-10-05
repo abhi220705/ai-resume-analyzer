@@ -29,6 +29,25 @@ type ResumeDetail = ResumeItem & {
   extractedText: string | null;
 };
 
+type AnalysisCheck = {
+  id: string;
+  label: string;
+  earned: number;
+  possible: number;
+  explanation: string;
+};
+
+type ResumeAnalysis = {
+  overallScore: number;
+  wordCount: number;
+  detectedSkills: string[];
+  report: {
+    checks: AnalysisCheck[];
+    suggestions: string[];
+    limitations: string[];
+  };
+};
+
 const statusLabels: Record<ParseStatus, string> = {
   PENDING: "Ready to extract",
   PROCESSING: "Processing",
@@ -42,6 +61,7 @@ const MAX_FILE_BYTES = 5 * 1024 * 1024;
 export function ResumeUpload() {
   const [resumes, setResumes] = useState<ResumeItem[]>([]);
   const [selected, setSelected] = useState<ResumeDetail | null>(null);
+  const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState("");
   const [loadError, setLoadError] = useState("");
@@ -74,7 +94,9 @@ export function ResumeUpload() {
           );
         }
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
@@ -94,10 +116,13 @@ export function ResumeUpload() {
   async function handleUpload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (actionRunning.current || loading || loadError) return;
+    if (actionRunning.current || loading || loadError) {
+      return;
+    }
 
     setError("");
     setMessage("");
+    setAnalysis(null);
 
     const form = event.currentTarget;
     const body = new FormData(form);
@@ -153,13 +178,16 @@ export function ResumeUpload() {
     resumeId: string,
     action: "parse" | "view",
   ) {
-    if (actionRunning.current || loading) return;
+    if (actionRunning.current || loading) {
+      return;
+    }
 
     actionRunning.current = true;
     setBusy(`${action}:${resumeId}`);
     setError("");
     setMessage("");
     setSelected(null);
+    setAnalysis(null);
 
     try {
       const path = `/api/resumes/${encodeURIComponent(resumeId)}`;
@@ -176,6 +204,7 @@ export function ResumeUpload() {
           : await authenticatedRequest<{ resume: ResumeDetail }>(path);
 
       setSelected(data.resume);
+
       setResumes((current) =>
         current.map((item) =>
           item.id === data.resume.id ? data.resume : item,
@@ -196,8 +225,39 @@ export function ResumeUpload() {
           : "Could not process this resume.",
       );
 
-      // Reload saved status after a failure or interrupted request.
       refreshList();
+    } finally {
+      actionRunning.current = false;
+      setBusy("");
+    }
+  }
+
+  async function handleAnalyze(resumeId: string) {
+    if (actionRunning.current || loading) {
+      return;
+    }
+
+    actionRunning.current = true;
+    setBusy(`analyze:${resumeId}`);
+    setError("");
+    setMessage("");
+    setSelected(null);
+    setAnalysis(null);
+
+    try {
+      const data = await authenticatedRequest<{
+        analysis: ResumeAnalysis;
+      }>(`/api/resumes/${encodeURIComponent(resumeId)}/analysis`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+
+      setAnalysis(data.analysis);
+      setMessage("Resume analysis completed and saved successfully.");
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Analysis failed.",
+      );
     } finally {
       actionRunning.current = false;
       setBusy("");
@@ -216,6 +276,7 @@ export function ResumeUpload() {
             setError("");
             setMessage("");
             setSelected(null);
+            setAnalysis(null);
             refreshList();
           }}
           className="rounded-xl border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50 disabled:opacity-50"
@@ -236,7 +297,10 @@ export function ResumeUpload() {
       )}
 
       {message && (
-        <p role="status" className="mt-4 rounded-xl bg-emerald-50 p-4 text-emerald-800">
+        <p
+          role="status"
+          className="mt-4 rounded-xl bg-emerald-50 p-4 text-emerald-800"
+        >
           {message}
         </p>
       )}
@@ -336,8 +400,12 @@ export function ResumeUpload() {
               <div className="mt-4 flex flex-wrap gap-3">
                 <button
                   type="button"
-                  disabled={disabled || resume.parseStatus === "COMPLETED"}
-                  onClick={() => void handleResumeAction(resume.id, "parse")}
+                  disabled={
+                    disabled || resume.parseStatus === "COMPLETED"
+                  }
+                  onClick={() =>
+                    void handleResumeAction(resume.id, "parse")
+                  }
                   className="rounded-xl bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
                 >
                   {busy === `parse:${resume.id}`
@@ -351,15 +419,110 @@ export function ResumeUpload() {
                 <button
                   type="button"
                   disabled={disabled}
-                  onClick={() => void handleResumeAction(resume.id, "view")}
+                  onClick={() =>
+                    void handleResumeAction(resume.id, "view")
+                  }
                   className="rounded-xl border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50 disabled:opacity-50"
                 >
-                  {busy === `view:${resume.id}` ? "Loading..." : "View text"}
+                  {busy === `view:${resume.id}`
+                    ? "Loading..."
+                    : "View text"}
+                </button>
+
+                <button
+                  type="button"
+                  disabled={
+                    disabled || resume.parseStatus !== "COMPLETED"
+                  }
+                  onClick={() => void handleAnalyze(resume.id)}
+                  className="rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {busy === `analyze:${resume.id}`
+                    ? "Analyzing..."
+                    : "Analyze resume"}
                 </button>
               </div>
             </li>
           ))}
         </ul>
+      )}
+
+      {analysis && (
+        <section
+          aria-label="Resume analysis"
+          className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-5"
+        >
+          <h3 className="text-xl font-bold text-emerald-950">
+            Resume analysis
+          </h3>
+
+          <p className="mt-3 text-4xl font-bold text-emerald-700">
+            {analysis.overallScore}/100
+          </p>
+
+          <p className="mt-1 text-sm text-emerald-900">
+            Based on {analysis.wordCount} extracted words.
+          </p>
+
+          <h4 className="mt-6 font-bold text-emerald-950">
+            Detected skills
+          </h4>
+
+          {analysis.detectedSkills.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {analysis.detectedSkills.map((skill) => (
+                <span
+                  key={skill}
+                  className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-emerald-800"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-2 text-sm text-emerald-900">
+              No recognized technical skills were detected.
+            </p>
+          )}
+
+          <h4 className="mt-6 font-bold text-emerald-950">
+            Score breakdown
+          </h4>
+
+          <ul className="mt-3 space-y-2">
+            {analysis.report.checks.map((check) => (
+              <li
+                key={check.id}
+                className="rounded-xl bg-white p-3 text-sm"
+              >
+                <div className="flex justify-between gap-3 font-semibold">
+                  <span>{check.label}</span>
+                  <span>
+                    {check.earned}/{check.possible}
+                  </span>
+                </div>
+
+                <p className="mt-1 text-slate-600">
+                  {check.explanation}
+                </p>
+              </li>
+            ))}
+          </ul>
+
+          {analysis.report.suggestions.length > 0 && (
+            <>
+              <h4 className="mt-6 font-bold text-emerald-950">
+                Suggestions
+              </h4>
+
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-emerald-950">
+                {analysis.report.suggestions.map((suggestion) => (
+                  <li key={suggestion}>{suggestion}</li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
       )}
 
       {selected && (
@@ -370,6 +533,7 @@ export function ResumeUpload() {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <h3 className="font-bold">Extracted text</h3>
+
               <p className="mt-1 break-words text-sm text-slate-600">
                 {selected.originalName}
               </p>
@@ -393,7 +557,8 @@ export function ResumeUpload() {
               {selected.parseStatus === "NO_TEXT"
                 ? "No embedded text was found. OCR may be required."
                 : selected.parseStatus === "FAILED"
-                  ? selected.parseError || "Extraction failed. Please retry."
+                  ? selected.parseError ||
+                    "Extraction failed. Please retry."
                   : selected.parseStatus === "PROCESSING"
                     ? "Extraction is processing. Refresh the list shortly."
                     : "Click Extract text to process this resume first."}
