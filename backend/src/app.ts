@@ -11,6 +11,7 @@ import { recruiterRouter } from "./routes/recruiter.routes.js";
 import { companyRouter } from "./routes/company.routes.js";
 import { jobRouter } from "./routes/job.routes.js";
 import { matchRouter } from "./routes/match.routes.js";
+import { applicationRouter } from "./routes/application.routes.js";
 
 export function createApp(frontendOrigin: string) {
   const app = express();
@@ -26,6 +27,7 @@ export function createApp(frontendOrigin: string) {
   );
 
   app.use("/api/jobs", express.json({ limit: "64kb" }));
+  app.use("/api/applications", express.json({ limit: "32kb" }));
   app.use(express.json({ limit: "10kb" }));
   app.use(cookieParser());
 
@@ -37,6 +39,7 @@ export function createApp(frontendOrigin: string) {
   app.use("/api/company", companyRouter);
   app.use("/api/jobs", jobRouter);
   app.use("/api/matches", matchRouter);
+  app.use("/api/applications", applicationRouter);
 
   app.use((_request, response) => {
     response.status(404).json({
