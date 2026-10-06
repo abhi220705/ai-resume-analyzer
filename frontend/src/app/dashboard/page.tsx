@@ -1,5 +1,5 @@
 "use client";
-
+import { RecruiterOverview } from "@/components/recruiter-overview";
 import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -197,6 +197,7 @@ function DashboardContent({
       </nav>
 
       {user.role === "CANDIDATE" && <CandidateOverview />}
+{user.role === "RECRUITER" && <RecruiterOverview />}
 
       <ProfileEditor />
 
