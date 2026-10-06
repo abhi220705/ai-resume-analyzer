@@ -28,6 +28,25 @@ enum ResumeParseStatus {
   FAILED
 }
 
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+  CONTRACT
+}
+
+enum WorkMode {
+  ON_SITE
+  HYBRID
+  REMOTE
+}
+
 model User {
   id               String            @id @default(uuid()) @db.Uuid
   name             String            @db.VarChar(100)
@@ -41,6 +60,7 @@ model User {
   resumes          Resume[]
   recruiterProfile RecruiterProfile?
   ownedCompany     Company?          @relation("CompanyOwner")
+  postedJobs       Job[]             @relation("JobCreator")
 
   @@map("users")
 }
@@ -150,6 +170,34 @@ model Company {
 
   owner      User               @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Restrict)
   recruiters RecruiterProfile[]
+  jobs       Job[]
 
   @@map("companies")
+}
+
+model Job {
+  id                 String         @id @default(uuid()) @db.Uuid
+  companyId          String         @db.Uuid
+  createdById        String         @db.Uuid
+  title              String         @db.VarChar(150)
+  description        String         @db.VarChar(5000)
+  location           String         @db.VarChar(150)
+  employmentType     EmploymentType
+  workMode           WorkMode
+  minExperienceYears Int            @default(0)
+  requiredSkills     String[]       @default([])
+  preferredSkills    String[]       @default([])
+  status             JobStatus      @default(DRAFT)
+  publishedAt        DateTime?
+  closedAt           DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  createdBy User    @relation("JobCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([companyId, createdAt])
+  @@index([createdById, createdAt])
+  @@index([status, publishedAt, id])
+  @@map("jobs")
 }

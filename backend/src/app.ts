@@ -1,19 +1,20 @@
-import { resumeRouter } from "./routes/resume.routes.js";
-import { profileRouter } from "./routes/profile.routes.js";
 import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
-import { recruiterRouter } from "./routes/recruiter.routes.js";
+
 import { healthRouter } from "./routes/health.routes.js";
 import { authRouter } from "./routes/auth.routes.js";
+import { profileRouter } from "./routes/profile.routes.js";
+import { resumeRouter } from "./routes/resume.routes.js";
+import { recruiterRouter } from "./routes/recruiter.routes.js";
 import { companyRouter } from "./routes/company.routes.js";
+import { jobRouter } from "./routes/job.routes.js";
 
 export function createApp(frontendOrigin: string) {
   const app = express();
 
   app.disable("x-powered-by");
-
   app.use(helmet());
 
   app.use(
@@ -23,6 +24,9 @@ export function createApp(frontendOrigin: string) {
     }),
   );
 
+  // Job descriptions and skill lists may exceed the default 10 KiB.
+  // Keep the larger JSON limit scoped to job requests.
+  app.use("/api/jobs", express.json({ limit: "64kb" }));
   app.use(express.json({ limit: "10kb" }));
   app.use(cookieParser());
 
@@ -32,6 +36,7 @@ export function createApp(frontendOrigin: string) {
   app.use("/api/resumes", resumeRouter);
   app.use("/api/recruiter", recruiterRouter);
   app.use("/api/company", companyRouter);
+  app.use("/api/jobs", jobRouter);
 
   app.use((_request, response) => {
     response.status(404).json({
