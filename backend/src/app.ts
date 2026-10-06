@@ -12,6 +12,7 @@ import { companyRouter } from "./routes/company.routes.js";
 import { jobRouter } from "./routes/job.routes.js";
 import { matchRouter } from "./routes/match.routes.js";
 import { applicationRouter } from "./routes/application.routes.js";
+import { dashboardRouter } from "./routes/dashboard.routes.js";
 
 export function createApp(frontendOrigin: string) {
   const app = express();
@@ -40,6 +41,7 @@ export function createApp(frontendOrigin: string) {
   app.use("/api/jobs", jobRouter);
   app.use("/api/matches", matchRouter);
   app.use("/api/applications", applicationRouter);
+  app.use("/api/dashboard", dashboardRouter);
 
   app.use((_request, response) => {
     response.status(404).json({
