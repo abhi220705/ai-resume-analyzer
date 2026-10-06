@@ -4,9 +4,10 @@ import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
-
+import { recruiterRouter } from "./routes/recruiter.routes.js";
 import { healthRouter } from "./routes/health.routes.js";
 import { authRouter } from "./routes/auth.routes.js";
+import { companyRouter } from "./routes/company.routes.js";
 
 export function createApp(frontendOrigin: string) {
   const app = express();
@@ -29,6 +30,8 @@ export function createApp(frontendOrigin: string) {
   app.use("/api/auth", authRouter);
   app.use("/api/profile", profileRouter);
   app.use("/api/resumes", resumeRouter);
+  app.use("/api/recruiter", recruiterRouter);
+  app.use("/api/company", companyRouter);
 
   app.use((_request, response) => {
     response.status(404).json({

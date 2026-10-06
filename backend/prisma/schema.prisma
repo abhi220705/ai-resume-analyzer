@@ -7,6 +7,13 @@ datasource db {
   provider = "postgresql"
 }
 
+enum CompanyVerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
 enum UserRole {
   CANDIDATE
   RECRUITER
@@ -22,16 +29,18 @@ enum ResumeParseStatus {
 }
 
 model User {
-  id              String            @id @default(uuid()) @db.Uuid
-  name            String            @db.VarChar(100)
-  email           String            @unique @db.VarChar(254)
-  passwordHash    String
-  role            UserRole          @default(CANDIDATE)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  refreshSessions RefreshSession[]
-  profile         CandidateProfile?
-  resumes         Resume[]
+  id               String            @id @default(uuid()) @db.Uuid
+  name             String            @db.VarChar(100)
+  email            String            @unique @db.VarChar(254)
+  passwordHash     String
+  role             UserRole          @default(CANDIDATE)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  refreshSessions  RefreshSession[]
+  profile          CandidateProfile?
+  resumes          Resume[]
+  recruiterProfile RecruiterProfile?
+  ownedCompany     Company?          @relation("CompanyOwner")
 
   @@map("users")
 }
@@ -109,4 +118,38 @@ model ResumeAnalysis {
   resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 
   @@map("resume_analyses")
+}
+
+model RecruiterProfile {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @db.Uuid
+  companyId String?  @db.Uuid
+  jobTitle  String?  @db.VarChar(100)
+  phone     String?  @db.VarChar(20)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@map("recruiter_profiles")
+}
+
+model Company {
+  id                 String                    @id @default(uuid()) @db.Uuid
+  ownerId            String                    @unique @db.Uuid
+  name               String                    @db.VarChar(150)
+  website            String?                   @db.VarChar(500)
+  industry           String?                   @db.VarChar(100)
+  location           String?                   @db.VarChar(150)
+  description        String?                   @db.VarChar(2000)
+  verificationStatus CompanyVerificationStatus @default(UNVERIFIED)
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+
+  owner      User               @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  recruiters RecruiterProfile[]
+
+  @@map("companies")
 }
