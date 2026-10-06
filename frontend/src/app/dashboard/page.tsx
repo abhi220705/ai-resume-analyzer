@@ -192,6 +192,16 @@ export default function DashboardPage() {
           {busy ? "Logging out..." : "Log out"}
         </button>
       </header>
+      {(user.role === "CANDIDATE" || user.role === "RECRUITER") && (
+  <Link
+    href="/applications"
+    className="mt-6 mr-3 inline-block rounded-xl bg-slate-800 px-5 py-3 font-semibold text-white hover:bg-slate-700"
+  >
+    {user.role === "CANDIDATE"
+      ? "My applications"
+      : "Review applications"}
+  </Link>
+)}
       {user.role === "CANDIDATE" && (
   <Link
     href="/matches"
