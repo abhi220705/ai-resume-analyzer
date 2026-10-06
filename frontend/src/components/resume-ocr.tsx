@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { authenticatedRequest } from "@/lib/api";
+import { ResumeIntegrity } from "@/components/resume-integrity";
 
 type ResumeOption = {
   id: string;
@@ -324,6 +325,9 @@ function OcrResult({ resumeId }: { resumeId: string }) {
           <pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-xl bg-slate-50 p-4 text-sm">
             {resume.ocrText}
           </pre>
+          <ResumeIntegrity key={resumeId} resumeId={resumeId} />
+
+        
         </div>
       )}
     </div>
