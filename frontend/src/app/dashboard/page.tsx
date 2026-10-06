@@ -192,6 +192,14 @@ export default function DashboardPage() {
           {busy ? "Logging out..." : "Log out"}
         </button>
       </header>
+      {user.role === "CANDIDATE" && (
+  <Link
+    href="/matches"
+    className="mt-6 mr-3 inline-block rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-700"
+  >
+    Match resume to job
+  </Link>
+)}
       <Link
   href="/jobs"
   className="mt-6 mr-3 inline-block rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white hover:bg-emerald-700"

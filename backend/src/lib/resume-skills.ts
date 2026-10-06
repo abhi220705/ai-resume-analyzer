@@ -3,7 +3,7 @@ type SkillDefinition = {
   aliases: readonly string[];
 };
 
-const skillDictionary: readonly SkillDefinition[] = [
+export const skillDictionary: readonly SkillDefinition[] = [
   { name: "Java", aliases: ["java"] },
   { name: "JavaScript", aliases: ["javascript", "java script"] },
   { name: "TypeScript", aliases: ["typescript"] },
