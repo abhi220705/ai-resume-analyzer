@@ -192,6 +192,12 @@ export default function DashboardPage() {
           {busy ? "Logging out..." : "Log out"}
         </button>
       </header>
+      <Link
+  href="/jobs"
+  className="mt-6 mr-3 inline-block rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white hover:bg-emerald-700"
+>
+  {user.role === "RECRUITER" ? "Manage jobs" : "Browse jobs"}
+</Link>
 
       {user.role === "RECRUITER" && (
   <Link
