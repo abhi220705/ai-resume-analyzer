@@ -7,7 +7,10 @@
     "dev": "node --watch --env-file=.env --import tsx src/server.ts",
     "build": "tsc",
     "start": "node --env-file=.env dist/server.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test tests/core.test.ts",
+    "test:api": "node --import tsx --test tests/api.test.ts",
+    "test:all": "npm test && npm run test:api"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.0",
