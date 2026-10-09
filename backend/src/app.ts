@@ -1,4 +1,3 @@
-import { resumeOcrRouter } from "./routes/resume-ocr.routes.js";
 import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -8,6 +7,7 @@ import { healthRouter } from "./routes/health.routes.js";
 import { authRouter } from "./routes/auth.routes.js";
 import { profileRouter } from "./routes/profile.routes.js";
 import { resumeRouter } from "./routes/resume.routes.js";
+import { resumeOcrRouter } from "./routes/resume-ocr.routes.js";
 import { recruiterRouter } from "./routes/recruiter.routes.js";
 import { companyRouter } from "./routes/company.routes.js";
 import { jobRouter } from "./routes/job.routes.js";
@@ -15,6 +15,9 @@ import { matchRouter } from "./routes/match.routes.js";
 import { applicationRouter } from "./routes/application.routes.js";
 import { dashboardRouter } from "./routes/dashboard.routes.js";
 import { resumeIntegrityRouter } from "./routes/resume-integrity.routes.js";
+import { adminRouter } from "./routes/admin.routes.js";
+import { adminActivityRouter } from "./routes/admin-activity.routes.js";
+
 
 export function createApp(frontendOrigin: string) {
   const app = express();
@@ -46,6 +49,8 @@ export function createApp(frontendOrigin: string) {
   app.use("/api/applications", applicationRouter);
   app.use("/api/dashboard", dashboardRouter);
   app.use("/api/integrity", resumeIntegrityRouter);
+  app.use("/api/admin", adminRouter);
+  app.use("/api/admin", adminActivityRouter);
 
   app.use((_request, response) => {
     response.status(404).json({
