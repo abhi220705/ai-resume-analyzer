@@ -275,6 +275,14 @@ function DashboardContent({
             Manage recruiter profile & company
           </Link>
         )}
+        {user.role === "ADMIN" && (
+  <Link
+    href="/admin"
+    className="rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-700"
+  >
+    Admin dashboard
+  </Link>
+)}
       </nav>
 
       {error && (
