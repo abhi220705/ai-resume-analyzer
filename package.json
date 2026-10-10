@@ -17,5 +17,20 @@
     "test": "npm run test --workspace backend",
     "test:api": "npm run test:api --workspace backend",
     "test:all": "npm run test:all --workspace backend"
+  },
+  "overrides": {
+    "@prisma/config": {
+      "deepmerge-ts": "8.0.2"
+    },
+    "prisma": {
+      "mysql2": "3.23.1"
+    }
+  },
+  "allowScripts": {
+    "@prisma/engines@7.10.0": true,
+    "prisma@7.10.0": true,
+    "bcrypt@6.0.0": true,
+    "esbuild@0.28.2": true,
+    "tesseract.js": false
   }
 }
