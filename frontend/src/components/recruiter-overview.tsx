@@ -79,14 +79,14 @@ export function RecruiterOverview() {
             setLoading(true);
             setReload((value) => value + 1);
           }}
-          className="rounded-xl border border-slate-300 bg-white px-4 py-2 font-semibold disabled:opacity-50"
+          className="ui-button"
         >
           {loading ? "Loading..." : "Refresh overview"}
         </button>
       </div>
 
       {loading ? (
-        <p role="status" className="mt-4 text-slate-600">
+        <p role="status" className="mt-4 text-stone-600">
           Loading jobs and applications...
         </p>
       ) : error ? (
@@ -99,48 +99,48 @@ export function RecruiterOverview() {
             {cards.map((card) => (
               <div
                 key={card.label}
-                className="rounded-2xl border border-slate-200 bg-white p-5"
+                className="ui-stat"
               >
-                <dt className="text-sm font-semibold text-slate-600">
+                <dt className="text-sm font-semibold text-stone-600">
                   {card.label}
                 </dt>
-                <dd className="mt-3 text-3xl font-bold text-indigo-700">
+                <dd className="mt-3 text-3xl font-bold">
                   {card.value}
                 </dd>
               </div>
             ))}
           </dl>
 
-          <p className="mt-3 text-sm text-slate-600">
+          <p className="mt-3 text-sm text-stone-600">
             Counts cover jobs you created in your current company.
             Awaiting review means Submitted. Refresh after changing jobs
             or application statuses.
           </p>
 
           {data.stats.totalJobs === 0 && (
-            <p className="mt-4 rounded-xl bg-indigo-50 p-4 text-indigo-900">
+            <p className="mt-4 rounded-xl bg-teal-50 p-4 text-teal-900">
               Set up your company profile, then use Manage jobs to create
               your first opportunity.
             </p>
           )}
 
-          <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6">
+          <section className="ui-panel mt-6">
             <div className="flex flex-wrap justify-between gap-3">
               <h3 className="text-xl font-bold">Recent applications</h3>
               <Link
                 href="/applications"
-                className="font-semibold text-indigo-700"
+                className="font-semibold text-teal-700"
               >
                 Review applications
               </Link>
             </div>
 
             {data.recentApplications.length === 0 ? (
-              <p className="mt-4 text-slate-600">
+              <p className="mt-4 text-stone-600">
                 No applications received yet.
               </p>
             ) : (
-              <ul className="mt-4 divide-y divide-slate-200">
+              <ul className="mt-4 divide-y divide-stone-200">
                 {data.recentApplications.map((application) => (
                   <li key={application.id} className="py-4">
                     <div className="flex flex-wrap justify-between gap-3">
@@ -148,16 +148,16 @@ export function RecruiterOverview() {
                         <p className="break-words font-semibold">
                           {application.candidate.name}
                         </p>
-                        <p className="mt-1 break-words text-sm text-slate-600">
+                        <p className="mt-1 break-words text-sm text-stone-600">
                           {application.job.title}
                         </p>
                       </div>
-                      <span className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-700">
+                      <span className="rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-700">
                         {application.status.charAt(0) +
                           application.status.slice(1).toLowerCase()}
                       </span>
                     </div>
-                    <p className="mt-2 text-sm text-slate-500">
+                    <p className="mt-2 text-sm text-stone-500">
                       Applied{" "}
                       {new Date(application.createdAt).toLocaleDateString()}
                     </p>

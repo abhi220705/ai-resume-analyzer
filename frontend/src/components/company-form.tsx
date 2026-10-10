@@ -132,20 +132,20 @@ export function CompanyForm() {
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6">
+    <section className="ui-panel">
       <h2 className="text-xl font-bold">
         {company ? "Company details" : "Create your company"}
       </h2>
 
       {company && (
-        <p className="mt-3 text-sm text-slate-600">
+        <p className="mt-3 text-sm text-stone-600">
           Verification status:{" "}
           <span className="font-semibold">{company.verificationStatus}</span>
         </p>
       )}
 
       {!canEdit && (
-        <p className="mt-3 text-slate-600">
+        <p className="mt-3 text-stone-600">
           Only the company owner can edit these details.
         </p>
       )}
@@ -184,7 +184,7 @@ export function CompanyForm() {
                 placeholder={
                   field.name === "website" ? "https://example.com" : undefined
                 }
-                className="mt-2 w-full rounded-lg border border-slate-300 p-3 disabled:bg-slate-50"
+                className="ui-input mt-2 w-full"
               />
             </label>
           ))}
@@ -196,19 +196,19 @@ export function CompanyForm() {
               defaultValue={company?.description ?? ""}
               maxLength={2000}
               rows={4}
-              className="mt-2 w-full rounded-lg border border-slate-300 p-3 disabled:bg-slate-50"
+              className="ui-input mt-2 w-full"
             />
           </label>
 
           {canEdit && (
             <>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-stone-600">
                 Saving company details sets verification to UNVERIFIED.
               </p>
               <button
                 type="submit"
                 disabled={saving}
-                className="rounded-lg bg-indigo-600 px-5 py-3 font-semibold text-white disabled:opacity-60"
+                className="ui-button ui-button-primary"
               >
                 {saving
                   ? "Saving..."

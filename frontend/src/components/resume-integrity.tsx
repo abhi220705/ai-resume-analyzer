@@ -64,10 +64,10 @@ export function ResumeIntegrity({ resumeId }: { resumeId: string }) {
   }
 
   return (
-    <section className="mt-6 rounded-2xl border border-slate-200 p-5">
+    <section className="mt-6 border-t border-stone-200 pt-6">
       <h3 className="text-xl font-bold">Resume integrity comparison</h3>
 
-      <p className="mt-2 text-sm text-slate-600">
+      <p className="mt-2 text-sm text-stone-600">
         Compare extracted PDF text with OCR text from the same resume.
         Complete normal text extraction and OCR first.
       </p>
@@ -76,7 +76,7 @@ export function ResumeIntegrity({ resumeId }: { resumeId: string }) {
         type="button"
         disabled={busy}
         onClick={() => void compare()}
-        className="mt-4 rounded-xl bg-indigo-600 px-5 py-2 font-semibold text-white disabled:opacity-50"
+        className="ui-button ui-button-primary mt-4"
       >
         {busy ? "Comparing..." : "Check integrity"}
       </button>
@@ -109,7 +109,7 @@ export function ResumeIntegrity({ resumeId }: { resumeId: string }) {
             </p>
           </div>
 
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-stone-600">
             Comparison confidence: {report.comparisonConfidence}
             {" · "}OCR confidence:{" "}
             {report.ocrConfidence === null
@@ -139,12 +139,12 @@ export function ResumeIntegrity({ resumeId }: { resumeId: string }) {
           )}
 
           {report.differencesTruncated && (
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-stone-600">
               Showing up to 30 differing terms per source.
             </p>
           )}
 
-          <details className="rounded-xl bg-slate-50 p-4">
+          <details className="rounded-xl bg-stone-50 p-4">
             <summary className="cursor-pointer font-semibold">
               How this result was calculated
             </summary>
@@ -158,7 +158,7 @@ export function ResumeIntegrity({ resumeId }: { resumeId: string }) {
             <p className="mt-3 text-sm">Engine: {report.engineVersion}</p>
           </details>
 
-          <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <ul className="list-disc space-y-1 pl-5 text-sm text-stone-600">
             {report.limitations.map((limitation) => (
               <li key={limitation}>{limitation}</li>
             ))}
@@ -177,7 +177,7 @@ function DifferenceList({
   items: Difference[];
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
+    <div className="rounded-xl border border-stone-200 p-4">
       <h4 className="font-semibold">{title}</h4>
       {items.length === 0 ? (
         <p className="mt-2 text-sm">No extra occurrences found.</p>

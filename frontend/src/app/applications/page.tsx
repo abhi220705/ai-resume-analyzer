@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PageHeading, StatusBadge } from "@/components/ui";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
@@ -56,10 +57,10 @@ const nextStatuses: Record<Status, Status[]> = {
 };
 
 const buttonClass =
-  "rounded-xl border border-slate-300 bg-white px-4 py-2 font-semibold hover:bg-slate-50 disabled:opacity-50";
+  "ui-button";
 
 const inputClass =
-  "mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3";
+  "ui-input";
 
 function label(value: string) {
   return value.charAt(0) + value.slice(1).toLowerCase();
@@ -75,7 +76,7 @@ export default function ApplicationsPage() {
 
   if (loading || !user) {
     return (
-      <main className="grid min-h-screen place-items-center">
+      <main className="ui-empty">
         <p role="status">Checking your session...</p>
       </main>
     );
@@ -83,9 +84,9 @@ export default function ApplicationsPage() {
 
   if (user.role === "ADMIN") {
     return (
-      <main className="mx-auto max-w-4xl px-6 py-12">
+      <main className="ui-page">
         <p>This page is for candidate and recruiter accounts.</p>
-        <Link href="/dashboard" className="mt-4 block text-indigo-700">
+        <Link href="/dashboard" className="mt-4 block text-teal-700">
           Back to dashboard
         </Link>
       </main>
@@ -232,24 +233,15 @@ function ApplicationWorkspace({ candidate }: { candidate: boolean }) {
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10">
-      <nav className="flex flex-wrap gap-5 font-semibold text-indigo-700">
-        <Link href="/dashboard">Dashboard</Link>
-        <Link href="/jobs">Jobs</Link>
-        {candidate && <Link href="/matches">Resume matching</Link>}
-      </nav>
-
-      <h1 className="mt-8 text-3xl font-bold">
-        {candidate ? "My applications" : "Received applications"}
-      </h1>
-
+    <main className="ui-page">
+      <PageHeading eyebrow="Keep moving forward" title={candidate ? "Your applications" : "Received applications"} description={candidate ? "A clear view of the opportunities you have applied for and where things stand." : "Review submitted resumes and manage each candidate's application status."} />
       {candidate && (
-        <ApplyForm
+        <details className="apply-disclosure"><summary>Apply to a new opportunity</summary><ApplyForm
           onSubmitted={() => {
             setPage(1);
             refresh();
           }}
-        />
+        /></details>
       )}
 
       {error && (
@@ -280,21 +272,19 @@ function ApplicationWorkspace({ candidate }: { candidate: boolean }) {
           {loadError} Use Refresh applications to retry.
         </p>
       ) : applications.length === 0 ? (
-        <p className="mt-5 text-slate-600">No applications on this page.</p>
+        <p className="ui-empty">No applications on this page.</p>
       ) : (
         <ul className="mt-6 space-y-4">
           {applications.map((application) => (
             <li
               key={application.id}
-              className="rounded-2xl border border-slate-200 bg-white p-5"
+              className="ui-panel"
             >
               <div className="flex flex-wrap justify-between gap-3">
                 <h2 className="break-words text-lg font-bold">
                   {application.job.title}
                 </h2>
-                <span className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-700">
-                  {label(application.status)}
-                </span>
+                <StatusBadge value={application.status} />
               </div>
 
               <p className="mt-2">{application.job.company.name}</p>
@@ -303,10 +293,10 @@ function ApplicationWorkspace({ candidate }: { candidate: boolean }) {
                   {application.candidate.name} — {application.candidate.email}
                 </p>
               )}
-              <p className="mt-2 break-words text-sm text-slate-600">
+              <p className="mt-2 break-words text-sm text-stone-600">
                 Resume: {application.resume.originalName}
               </p>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm text-stone-600">
                 Applied: {new Date(application.createdAt).toLocaleDateString()}
               </p>
 
@@ -367,7 +357,7 @@ function ApplicationWorkspace({ candidate }: { candidate: boolean }) {
         </ul>
       )}
 
-      <div className="mt-6 flex items-center gap-4">
+      <div className="ui-pagination">
         <button
           type="button"
           disabled={loading || busy || page === 1}
@@ -396,7 +386,7 @@ function ApplicationWorkspace({ candidate }: { candidate: boolean }) {
       </div>
 
       {detail && (
-        <section className="mt-8 rounded-2xl border border-indigo-200 bg-indigo-50 p-5">
+        <section className="mt-8 rounded-xl border border-teal-200 bg-teal-50 p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-xl font-bold">Submitted application</h2>
@@ -535,9 +525,9 @@ function ApplyForm({ onSubmitted }: { onSubmitted: () => void }) {
   }
 
   return (
-    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6">
+    <section className="ui-panel mt-6">
       <h2 className="text-xl font-bold">Apply to a job</h2>
-      <p className="mt-2 text-sm text-slate-600">
+      <p className="mt-2 text-sm text-stone-600">
         Submitting shares your name, email, cover letter, and selected resume
         text with the recruiter responsible for this job.
       </p>
@@ -583,7 +573,7 @@ function ApplyForm({ onSubmitted }: { onSubmitted: () => void }) {
           </label>
 
           {!loading && !loadError && resumes.length === 0 && (
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-stone-600">
               No parsed resume among your latest 50 uploads. Upload and extract
               your resume from the dashboard first.
             </p>
@@ -607,12 +597,12 @@ function ApplyForm({ onSubmitted }: { onSubmitted: () => void }) {
           </label>
 
           {!loading && !loadError && jobs.length === 0 && (
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-stone-600">
               No published jobs on this page.
             </p>
           )}
 
-          <div className="flex items-center gap-3">
+          <div className="ui-pagination">
             <button
               type="button"
               disabled={loading || busy || page === 1}
@@ -653,7 +643,7 @@ function ApplyForm({ onSubmitted }: { onSubmitted: () => void }) {
           <button
             type="submit"
             disabled={loading || busy || !resumeId || !jobId}
-            className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white disabled:opacity-50"
+            className="ui-button ui-button-primary"
           >
             {busy ? "Submitting..." : "Submit application"}
           </button>

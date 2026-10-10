@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PageHeading } from "@/components/ui";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { authenticatedRequest } from "@/lib/api";
@@ -47,7 +48,7 @@ export default function AdminPage() {
       <main className="mx-auto max-w-3xl space-y-4 p-8">
         <h1 className="text-2xl font-bold">Admin dashboard</h1>
         <p>{sessionError || "Log in with your administrator account."}</p>
-        <Link href="/login" className="text-indigo-700 underline">
+        <Link href="/login" className="text-teal-700 underline">
           Go to login
         </Link>
       </main>
@@ -59,7 +60,7 @@ export default function AdminPage() {
       <main className="mx-auto max-w-3xl space-y-4 p-8">
         <h1 className="text-2xl font-bold">Access restricted</h1>
         <p>This page is available only to administrators.</p>
-        <Link href="/dashboard" className="text-indigo-700 underline">
+        <Link href="/dashboard" className="text-teal-700 underline">
           Back to dashboard
         </Link>
       </main>
@@ -110,24 +111,10 @@ function AdminOverview({ name }: { name: string }) {
   }, [reload]);
 
   return (
-    <main className="mx-auto max-w-6xl space-y-8 px-6 py-10">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="font-semibold text-indigo-700">Administration</p>
-          <h1 className="mt-2 text-3xl font-bold">Platform overview</h1>
-          <p className="mt-2 text-slate-600">Welcome, {name}.</p>
-        </div>
-
-        <Link
-          href="/dashboard"
-          className="rounded-xl border border-slate-300 px-5 py-2 font-semibold"
-        >
-          Back to dashboard
-        </Link>
-      </header>
-
+    <main className="ui-page space-y-6">
+      <PageHeading eyebrow="Administration" title="Platform overview" description={`Welcome, ${name}. Review activity and keep the platform organized.`} />
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <p className="text-slate-600">
+        <p className="text-stone-600">
           Counts reflect stored records across the platform.
         </p>
 
@@ -138,7 +125,7 @@ function AdminOverview({ name }: { name: string }) {
             setLoading(true);
             setReload((value) => value + 1);
           }}
-          className="rounded-xl bg-indigo-600 px-5 py-2 font-semibold text-white disabled:opacity-50"
+          className="ui-button ui-button-primary"
         >
           {loading ? "Loading..." : "Refresh statistics"}
         </button>
@@ -151,22 +138,22 @@ function AdminOverview({ name }: { name: string }) {
           {error} Use Refresh statistics to retry.
         </p>
       ) : stats ? (
-        <dl className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {cards.map((card) => (
             <div
               key={card.key}
-              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+              className="ui-stat"
             >
-              <dt className="font-medium text-slate-600">{card.label}</dt>
-              <dd className="mt-3 text-4xl font-bold text-indigo-700">
+              <dt className="font-medium text-stone-600">{card.label}</dt>
+              <dd className="mt-3 text-4xl font-bold text-teal-700">
                 {stats[card.key].toLocaleString()}
               </dd>
             </div>
           ))}
         </dl>
       ) : null}
-      <AdminManagement />
-      <AdminActivity />
+      <div className="ui-panel mt-8"><AdminManagement /></div>
+      <div className="ui-panel mt-8"><AdminActivity /></div>
 
     </main>
   );

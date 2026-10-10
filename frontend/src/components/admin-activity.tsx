@@ -46,8 +46,7 @@ type ListData = {
 type View = "jobs" | "applications";
 
 const buttonClass =
-  "rounded-lg border border-slate-300 px-4 py-2 font-semibold " +
-  "hover:bg-slate-100 disabled:opacity-50";
+  "ui-button";
 
 export function AdminActivity() {
   const [view, setView] = useState<View>("jobs");
@@ -56,7 +55,7 @@ export function AdminActivity() {
     <section className="space-y-5">
       <h2 className="text-2xl font-bold">Jobs and applications</h2>
 
-      <div className="flex gap-3">
+      <div className="ui-segmented">
         {(["jobs", "applications"] as const).map((item) => (
           <button
             key={item}
@@ -64,7 +63,7 @@ export function AdminActivity() {
             aria-pressed={view === item}
             onClick={() => setView(item)}
             className={`${buttonClass} ${
-              view === item ? "bg-indigo-50 text-indigo-700" : "bg-white"
+              view === item ? "bg-teal-50 text-teal-800" : "bg-white"
             }`}
           >
             {item === "jobs" ? "Jobs" : "Applications"}
@@ -157,7 +156,7 @@ function ActivityList({ view }: { view: View }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-slate-600">Page {page} · Up to 20 records</p>
+        <p className="text-stone-600">Page {page} · Up to 20 records</p>
 
         <button
           type="button"
@@ -195,11 +194,11 @@ function ActivityList({ view }: { view: View }) {
             {data.jobs?.map((job) => (
               <article
                 key={job.id}
-                className="rounded-xl border border-slate-200 bg-white p-5"
+                className="ui-panel"
               >
                 <div className="flex flex-wrap justify-between gap-3">
                   <h3 className="text-xl font-bold">{job.title}</h3>
-                  <span className="font-semibold text-indigo-700">
+                  <span className="font-semibold text-teal-700">
                     {job.status}
                   </span>
                 </div>
@@ -208,11 +207,11 @@ function ActivityList({ view }: { view: View }) {
                   {job.company.name} · {job.location}
                 </p>
 
-                <p className="mt-2 text-sm text-slate-600">
+                <p className="mt-2 text-sm text-stone-600">
                   Company verification: {job.company.verificationStatus}
                 </p>
 
-                <p className="mt-2 break-all text-sm text-slate-600">
+                <p className="mt-2 break-all text-sm text-stone-600">
                   Posted by {job.createdBy.name} — {job.createdBy.email}
                 </p>
 
@@ -220,7 +219,7 @@ function ActivityList({ view }: { view: View }) {
                   Applications: {job._count.applications}
                 </p>
 
-                <details className="mt-4 rounded-lg bg-slate-50 p-3">
+                <details className="mt-4 rounded-lg bg-stone-50 p-3">
                   <summary className="cursor-pointer font-semibold">
                     Review job description
                   </summary>
@@ -234,7 +233,7 @@ function ActivityList({ view }: { view: View }) {
                     type="button"
                     disabled={Boolean(closingId)}
                     onClick={() => void closeJob(job)}
-                    className="mt-4 rounded-lg bg-red-700 px-4 py-2 font-semibold text-white disabled:opacity-50"
+                    className="ui-button ui-button-danger mt-4"
                   >
                     {closingId === job.id ? "Closing..." : "Close job"}
                   </button>
@@ -243,10 +242,10 @@ function ActivityList({ view }: { view: View }) {
             ))}
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-slate-200">
+          <div className="overflow-x-auto rounded-xl border border-stone-200">
             <table className="w-full text-left text-sm">
               <caption className="sr-only">Platform applications</caption>
-              <thead className="bg-slate-100">
+              <thead className="bg-stone-100">
                 <tr>
                   {["Candidate", "Job", "Status", "Applied"].map((heading) => (
                     <th key={heading} scope="col" className="p-3">
@@ -259,22 +258,22 @@ function ActivityList({ view }: { view: View }) {
                 {data.applications?.map((application) => (
                   <tr
                     key={application.id}
-                    className="border-t border-slate-200"
+                    className="border-t border-stone-200"
                   >
                     <td className="p-3">
                       <p className="font-semibold">
                         {application.candidate.name}
                       </p>
-                      <p className="break-all text-slate-600">
+                      <p className="break-all text-stone-600">
                         {application.candidate.email}
                       </p>
                     </td>
                     <td className="p-3">
                       <p>{application.job.title}</p>
-                      <p className="text-slate-600">
+                      <p className="text-stone-600">
                         {application.job.company.name}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-stone-500">
                         Job: {application.job.status}
                       </p>
                     </td>
