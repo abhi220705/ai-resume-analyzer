@@ -237,6 +237,15 @@ const refreshLimiter = rateLimit({
 authRouter.post("/refresh", refreshLimiter, async (request, response) => {
   const refreshToken: unknown = request.cookies?.refreshToken;
 
+  if (refreshToken === undefined) {
+    response.status(200).json({
+      success: true,
+      message: "No active session.",
+      data: { accessToken: null },
+    });
+    return;
+  }
+
   if (
     typeof refreshToken !== "string" ||
     !/^[a-f0-9]{64}$/.test(refreshToken)

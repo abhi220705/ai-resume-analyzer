@@ -152,7 +152,7 @@ export function RecruiterOverview() {
                           {application.job.title}
                         </p>
                       </div>
-                      <span className="rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-700">
+                      <span className="inline-flex items-center self-start rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-700">
                         {application.status.charAt(0) +
                           application.status.slice(1).toLowerCase()}
                       </span>

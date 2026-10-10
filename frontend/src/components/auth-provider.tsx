@@ -37,7 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function restoreSession() {
       try {
-        await refreshAccessToken();
+        const accessToken = await refreshAccessToken();
+        if (!accessToken) return;
 
         const data = await authenticatedRequest<{ user: User }>(
           "/api/auth/me",

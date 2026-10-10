@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { PageHeading, StatusBadge } from "@/components/ui";
+import { SelectField, type SelectOption } from "@/components/select";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
@@ -555,22 +556,22 @@ function ApplyForm({ onSubmitted }: { onSubmitted: () => void }) {
 
       <form onSubmit={submit} className="mt-5">
         <fieldset disabled={loading || busy || Boolean(loadError)} className="space-y-5">
-          <label className="block font-semibold">
-            Resume
-            <select
+          <div className="block font-semibold">
+            <span id="application-resume-label">Resume</span>
+            <SelectField
               required
+              labelledBy="application-resume-label"
               value={resumeId}
-              onChange={(event) => setResumeId(event.target.value)}
-              className={inputClass}
-            >
-              <option value="">Choose a parsed resume</option>
-              {resumes.map((resume) => (
-                <option key={resume.id} value={resume.id}>
-                  {resume.originalName}
-                </option>
-              ))}
-            </select>
-          </label>
+              onChange={setResumeId}
+              options={[
+                { value: "", label: "Choose a parsed resume" },
+                ...resumes.map((resume) => ({
+                  value: resume.id,
+                  label: resume.originalName,
+                })),
+              ]}
+            />
+          </div>
 
           {!loading && !loadError && resumes.length === 0 && (
             <p className="text-sm text-stone-600">
@@ -579,22 +580,22 @@ function ApplyForm({ onSubmitted }: { onSubmitted: () => void }) {
             </p>
           )}
 
-          <label className="block font-semibold">
-            Published job
-            <select
+          <div className="block font-semibold">
+            <span id="application-job-label">Published job</span>
+            <SelectField
               required
+              labelledBy="application-job-label"
               value={jobId}
-              onChange={(event) => setJobId(event.target.value)}
-              className={inputClass}
-            >
-              <option value="">Choose a job</option>
-              {jobs.map((job) => (
-                <option key={job.id} value={job.id}>
-                  {job.title} — {job.company.name}
-                </option>
-              ))}
-            </select>
-          </label>
+              onChange={setJobId}
+              options={[
+                { value: "", label: "Choose a job" },
+                ...jobs.map((job) => ({
+                  value: job.id,
+                  label: `${job.title} — ${job.company.name}`,
+                })),
+              ]}
+            />
+          </div>
 
           {!loading && !loadError && jobs.length === 0 && (
             <p className="text-sm text-stone-600">

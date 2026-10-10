@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { authenticatedRequest } from "@/lib/api";
 import { ResumeIntegrity } from "@/components/resume-integrity";
+import { SelectField } from "@/components/select";
 
 type ResumeOption = { id: string; originalName: string };
 type OcrResume = {
@@ -64,10 +65,17 @@ export function ResumeOcr() {
         <p className="mt-5 rounded-lg border border-dashed border-stone-300 p-5 text-sm text-stone-600">Upload a resume in the section above, then refresh this list.</p>
       ) : (
         <>
-          <label htmlFor="ocr-resume" className="mt-5 block text-sm font-semibold">Choose a resume</label>
-          <select id="ocr-resume" className={`mt-2 w-full min-w-0 rounded-lg border border-stone-300 bg-white p-3 text-base ${focus}`} value={selectedId} onChange={(event) => setSelectedId(event.target.value)}>
-            {resumes.map((resume) => <option key={resume.id} value={resume.id}>{resume.originalName}</option>)}
-          </select>
+          <span id="ocr-resume-label" className="mt-5 block text-sm font-semibold">Choose a resume</span>
+          <SelectField
+            id="ocr-resume"
+            labelledBy="ocr-resume-label"
+            value={selectedId}
+            onChange={setSelectedId}
+            options={[
+              { value: "", label: "Select a resume" },
+              ...resumes.map((resume) => ({ value: resume.id, label: resume.originalName })),
+            ]}
+          />
           {selectedId && <OcrResult key={selectedId} resumeId={selectedId} />}
         </>
       )}

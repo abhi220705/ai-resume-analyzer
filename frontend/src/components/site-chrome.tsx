@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { Brand, Icon, type IconName } from "@/components/ui";
 
@@ -15,6 +15,20 @@ export function SiteChrome({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Fade the new page in on every route change so navigation feels continuous.
+  useEffect(() => {
+    const node = contentRef.current;
+    if (!node) return;
+    node.classList.remove("is-entering");
+    // Force a reflow so the class re-triggers the animation on repeat visits.
+    void node.offsetWidth;
+    node.classList.add("is-entering");
+    const timer = window.setTimeout(() => node.classList.remove("is-entering"), 400);
+    return () => window.clearTimeout(timer);
+  }, [pathname]);
+
   if (!workspaceRoutes.some((path) => pathname === path || pathname.startsWith(`${path}/`)) || !user) return <>{children}</>;
   const candidate = user.role === "CANDIDATE";
   const recruiter = user.role === "RECRUITER";
@@ -39,19 +53,21 @@ export function SiteChrome({ children }: { children: ReactNode }) {
       <a href="#workspace-content" className="skip-link">Skip to content</a>
       <aside className={`workspace-sidebar ${menuOpen ? "is-open" : ""}`}>
         <Link href="/dashboard" className="sidebar-brand" onClick={() => setMenuOpen(false)}><Brand /></Link>
-        <p className="sidebar-label">Workspace</p>
+        {/* <p className="sidebar-label">Workspace</p> */}
         <nav id="workspace-navigation" aria-label="Main navigation">
           {links.map((link) => <Link key={link.href} href={link.href} aria-current={pathname === link.href ? "page" : undefined} onClick={() => setMenuOpen(false)} className="sidebar-link"><Icon name={link.icon} /><span>{link.label}</span>{pathname === link.href && <span className="nav-active-dot" />}</Link>)}
         </nav>
         {candidate && <div className="sidebar-note"><span className="ui-eyebrow">A little progress, daily</span><p>Know your strengths.<br />Find your next step.</p><Link href="/matches" onClick={() => setMenuOpen(false)}>Compare your skills <Icon name="arrow" /></Link></div>}
-        <div className="sidebar-footer"><Link href="/">Back to website <Icon name="arrow" /></Link><p>AI Resume Analyzer & Job Match Platform</p></div>
+        <div className="sidebar-footer"><Link href="/"><span className="sidebar-footer-text">Back to website</span> <Icon name="arrow" /></Link><p>AI Resume Analyzer & Job Match Platform</p></div>
       </aside>
       <div className="workspace-body">
         <header className="workspace-topbar">
-          <div className="topbar-location"><button type="button" className="ui-button ui-icon-button mobile-menu" onClick={() => setMenuOpen((value) => !value)} aria-expanded={menuOpen} aria-controls="workspace-navigation" aria-label={menuOpen ? "Close navigation" : "Open navigation"}><Icon name={menuOpen ? "close" : "menu"} /></button><span className="topbar-workspace">Workspace</span><span className="topbar-divider">/</span><span>{links.find((link) => link.href === pathname)?.label ?? "Workspace"}</span></div>
-          <div className="topbar-account"><span className="account-avatar" aria-hidden="true">{user.name.slice(0, 1).toUpperCase()}</span><span className="account-description"><strong>{user.name}</strong><small>{role} account</small></span><button type="button" className="ui-button ui-button-quiet" disabled={busy} onClick={() => void handleLogout()}><Icon name="logout" /><span>{busy ? "Logging out..." : "Log out"}</span></button></div>
+          <div className="topbar-inner">
+            <div className="topbar-location"><button type="button" className="ui-button ui-icon-button mobile-menu" onClick={() => setMenuOpen((value) => !value)} aria-expanded={menuOpen} aria-controls="workspace-navigation" aria-label={menuOpen ? "Close navigation" : "Open navigation"}><Icon name={menuOpen ? "close" : "menu"} /></button><span className="topbar-workspace">Workspace</span><span className="topbar-divider">/</span><span>{links.find((link) => link.href === pathname)?.label ?? "Workspace"}</span></div>
+            <div className="topbar-account"><span className="account-avatar" aria-hidden="true">{user.name.slice(0, 1).toUpperCase()}</span><span className="account-description"><strong>{user.name}</strong><small>{role} account</small></span><button type="button" className="ui-button ui-button-quiet" disabled={busy} onClick={() => void handleLogout()}><Icon name="logout" /><span>{busy ? "Logging out..." : "Log out"}</span></button></div>
+          </div>
         </header>
-        <div id="workspace-content" tabIndex={-1} className="workspace-content">{error && <p role="alert" className="ui-alert ui-alert-error">{error}</p>}{children}</div>
+        <div id="workspace-content" ref={contentRef} tabIndex={-1} className="workspace-content">{error && <p role="alert" className="ui-alert ui-alert-error">{error}</p>}{children}</div>
         <footer className="workspace-footer">Built for clearer resumes and more informed next steps.</footer>
       </div>
     </div>

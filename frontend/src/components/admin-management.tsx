@@ -2,6 +2,14 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { authenticatedRequest } from "@/lib/api";
+import { SelectField, type SelectOption } from "@/components/select";
+
+const VERIFICATION_STATUS_OPTIONS: SelectOption[] = [
+  { value: "UNVERIFIED", label: "Unverified" },
+  { value: "PENDING", label: "Pending review" },
+  { value: "VERIFIED", label: "Verified" },
+  { value: "REJECTED", label: "Rejected" },
+];
 
 type UserRow = {
   id: string;
@@ -269,21 +277,17 @@ function ManagementList({ view }: { view: View }) {
                       disabled={Boolean(savingId)}
                       className="flex flex-wrap items-end gap-3"
                     >
-                      <label className="block">
-                        <span className="block text-sm font-semibold">
+                      <div className="block">
+                        <span id={`status-${company.id}`} className="block text-sm font-semibold">
                           Verification status
                         </span>
-                        <select
+                        <SelectField
                           name="status"
+                          labelledBy={`status-${company.id}`}
                           defaultValue={company.verificationStatus}
-                          className="ui-input mt-2"
-                        >
-                          <option value="UNVERIFIED">Unverified</option>
-                          <option value="PENDING">Pending review</option>
-                          <option value="VERIFIED">Verified</option>
-                          <option value="REJECTED">Rejected</option>
-                        </select>
-                      </label>
+                          options={VERIFICATION_STATUS_OPTIONS}
+                        />
+                      </div>
 
                       <button type="submit" className={buttonClass}>
                         {savingId === company.id ? "Saving..." : "Save status"}

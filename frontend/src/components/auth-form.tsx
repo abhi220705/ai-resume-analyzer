@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { apiRequest } from "@/lib/api";
+import { HeroBackgroundMedia } from "@/components/hero-background";
 
-const inputClass =
-  "ui-input";
+const inputClass = "ui-input";
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const router = useRouter();
@@ -102,173 +102,200 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     );
   }
 
-  return (
-    <main className="auth-page">
-      <aside className="auth-story">
-        <Link href="/"><Brand /></Link>
-        <div className="auth-story-content">
-          <p className="ui-eyebrow mb-5">Every next step starts somewhere</p>
-          <h2>Bring your experience.<br />Find your direction.</h2>
-          <p>A thoughtful workspace to understand your resume, discover opportunities, and manage what comes next.</p>
-          <div className="auth-feature"><Icon name="document" />Resume analysis with explanations</div>
-          <div className="auth-feature"><Icon name="match" />Clear, skill-based job comparisons</div>
-          <div className="auth-feature"><Icon name="applications" />Applications organized in one place</div>
-        </div>
-        <p className="auth-story-footer">AI Resume Analyzer & Job Match Platform</p>
-      </aside>
-      <div className="auth-content">
-      <section className="auth-card">
-        <Link href="/" className="auth-mobile-brand"><Brand /></Link>
-        <p className="ui-eyebrow">{isRegister ? "A fresh start" : "Your workspace awaits"}</p>
-        <h1 className="mt-3">
-          {isRegister ? "Create your account" : "Welcome back"}
-        </h1>
+  const card = (
+    <section className="auth-card">
+      <Link href="/" className="auth-mobile-brand">
+        <Brand />
+      </Link>
 
-        <p className="mt-3">
-          {isRegister
-            ? "Join as a candidate or recruiter."
-            : "Sign in to continue to your account."}
-        </p>
+      <p className="ui-eyebrow">
+        {isRegister ? "A fresh start" : "Your workspace awaits"}
+      </p>
 
-        {registered && (
-          <p
-            role="status"
-            className="mt-5 rounded-xl bg-emerald-50 p-4 text-emerald-800"
-          >
-            Account created successfully. Log in below.
-          </p>
-        )}
+      <h1 className="mt-2">
+        {isRegister ? "Create your account" : "Welcome back"}
+      </h1>
 
-        {sessionError && (
-          <p role="status" className="mt-4 text-sm text-amber-800">
-            {sessionError}
-          </p>
-        )}
+      <p className="mt-2 text-stone-600">
+        {isRegister
+          ? "Join as a candidate or recruiter to access your workspace."
+          : "Sign in to continue to your account."}
+      </p>
 
-        {error && (
-          <p
-            id="form-error"
-            role="alert"
-            className="mt-5 rounded-xl bg-red-50 p-4 text-red-700"
-          >
-            {error}
-          </p>
-        )}
-
-        <form
-          aria-busy={busy}
-          onSubmit={handleSubmit}
-          aria-describedby={error ? "form-error" : undefined}
-          className="mt-6"
+      {registered && (
+        <p
+          role="status"
+          className="mt-5 rounded-xl bg-emerald-50 p-4 text-emerald-800"
         >
-          <fieldset disabled={busy} className="space-y-5">
-            {isRegister && (
-              <div>
-                <label htmlFor="name" className="text-sm font-semibold">
-                  Full name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  autoComplete="name"
-                  required
-                  minLength={2}
-                  maxLength={100}
-                  className={inputClass}
-                />
-              </div>
-            )}
+          Account created successfully. Log in below.
+        </p>
+      )}
 
+      {sessionError && (
+        <p role="status" className="mt-4 text-sm text-amber-800">
+          {sessionError}
+        </p>
+      )}
+
+      {error && (
+        <p
+          id="form-error"
+          role="alert"
+          className="mt-5 rounded-xl bg-red-50 p-4 text-red-700"
+        >
+          {error}
+        </p>
+      )}
+
+      <form
+        aria-busy={busy}
+        onSubmit={handleSubmit}
+        aria-describedby={error ? "form-error" : undefined}
+        className="mt-6"
+      >
+        <fieldset
+          disabled={busy}
+          className={isRegister ? "auth-field-grid" : "space-y-4"}
+        >
+          {isRegister && (
             <div>
-              <label htmlFor="email" className="text-sm font-semibold">
-                Email address
+              <label htmlFor="name" className="text-sm font-semibold">
+                Full name
               </label>
               <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
+                id="name"
+                name="name"
+                autoComplete="name"
+                placeholder="Jane Doe"
                 required
-                maxLength={254}
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                minLength={2}
+                maxLength={100}
                 className={inputClass}
               />
             </div>
+          )}
 
-            {isRegister && (
-              <div>
-                <label htmlFor="role" className="text-sm font-semibold">
-                  Account type
+          <div>
+            <label htmlFor="email" className="text-sm font-semibold">
+              Email address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@company.com"
+              required
+              maxLength={254}
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              className={inputClass}
+            />
+          </div>
+
+          {isRegister && (
+            <div
+              role="radiogroup"
+              aria-labelledby="role-legend"
+              className="auth-span-2"
+            >
+              <span id="role-legend" className="auth-role-legend">
+                Account type
+              </span>
+              <div className="auth-role-grid">
+                <label className="auth-role-option">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="CANDIDATE"
+                    defaultChecked
+                  />
+                  <span className="auth-role-card">
+                    <strong>Candidate</strong>
+                    <small>Job seeker — score and improve your resume</small>
+                  </span>
                 </label>
-                <select
-                  id="role"
-                  name="role"
-                  defaultValue="CANDIDATE"
-                  className={inputClass}
-                >
-                  <option value="CANDIDATE">Candidate — looking for jobs</option>
-                  <option value="RECRUITER">Recruiter — hiring candidates</option>
-                </select>
-              </div>
-            )}
 
-            <div>
-              <label htmlFor="password" className="text-sm font-semibold">
-                Password
-              </label>
-              <div className="password-wrap"><input
+                <label className="auth-role-option">
+                  <input type="radio" name="role" value="RECRUITER" />
+                  <span className="auth-role-card">
+                    <strong>Recruiter</strong>
+                    <small>Hiring team — post roles and rank matches</small>
+                  </span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="password" className="text-sm font-semibold">
+              Password
+            </label>
+            <div className="password-wrap">
+              <input
                 key={isRegister ? "new-password" : "login-password"}
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete={isRegister ? "new-password" : "current-password"}
+                placeholder={isRegister ? "At least 12 characters" : "••••••••••••"}
                 required
                 minLength={isRegister ? 12 : 1}
                 aria-describedby={isRegister ? "password-help" : undefined}
                 className={inputClass}
-              /><button type="button" className="password-toggle" aria-controls="password" aria-pressed={showPassword} onClick={() => setShowPassword((value) => !value)}>{showPassword ? "Hide" : "Show"}</button></div>
-              {isRegister && (
-                <p id="password-help" className="mt-2 text-xs text-stone-500">
-                  At least 12 characters; maximum 72 UTF-8 bytes.
-                </p>
-              )}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                aria-controls="password"
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword((value) => !value)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
             </div>
-
             {isRegister && (
-              <div>
-                <label
-                  htmlFor="confirmPassword"
-                  className="text-sm font-semibold"
-                >
-                  Confirm password
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  className={inputClass}
-                />
-              </div>
+              <p id="password-help" className="mt-2 text-xs text-stone-500">
+                 
+              </p>
             )}
+          </div>
 
-            <button
-              type="submit"
-              disabled={busy}
-              className="ui-button ui-button-primary w-full"
-            >
-              {busy
-                ? "Please wait…"
-                : isRegister
-                  ? "Create account"
-                  : "Log in"}
-            </button>
-          </fieldset>
-        </form>
+          {isRegister && (
+            <div>
+              <label htmlFor="confirmPassword" className="text-sm font-semibold">
+                Confirm password
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                placeholder="Re-enter your password"
+                required
+                className={inputClass}
+              />
+            </div>
+          )}
 
-        <p className="mt-6 text-center text-sm text-stone-600">
+          <button
+            type="submit"
+            disabled={busy}
+            className={`ui-button ui-button-primary mx-auto ${
+              isRegister ? " auth-span-2" : ""
+            }`}
+          >
+            {busy
+              ? "Please wait…"
+              : isRegister
+                ? "Create account"
+                : "Log in"}
+          </button>
+        </fieldset>
+      </form>
+
+      <div className="auth-card-footer">
+        <p className="auth-alt-action">
           {isRegister ? "Already have an account? " : "New here? "}
           <Link
             href={isRegister ? "/login" : "/register"}
@@ -276,13 +303,113 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
               setRegistered(false);
               setError("");
             }}
-            className="font-semibold text-teal-700"
+            className="font-semibold text-emerald-800 hover:text-emerald-950 transition-colors"
           >
             {isRegister ? "Log in" : "Create an account"}
           </Link>
         </p>
-      </section>
+
+        <div className="auth-secure-note">
+          <Icon name="shield" />
+          <span>Encrypted session • We never share your data</span>
+        </div>
       </div>
+    </section>
+  );
+
+  /* Register has its own single-panel layout: the bloom plays full-bleed
+     behind a centred card, instead of the two-column login split. */
+  if (mode === "register") {
+    return (
+      <main className="auth-page-single">
+        <div className="auth-aurora" aria-hidden="true">
+          <HeroBackgroundMedia />
+        </div>
+
+        <header className="auth-single-header">
+          <Link
+            href="/"
+            aria-label="AI Resume Analyzer home"
+            className="nav-brand-link"
+          >
+            <Brand />
+          </Link>
+        </header>
+
+        <div className="auth-single-inner">{card}</div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="auth-page">
+      {/* ─── Left Panel (Auth Story) ─── */}
+      <aside className="auth-story">
+        {/* Header aligned identically to Homepage Navbar height (72px) */}
+        <header className="auth-story-header">
+          <Link href="/" aria-label="AI Resume Analyzer home" className="nav-brand-link">
+            <Brand />
+          </Link>
+        </header>
+
+        <div className="auth-story-body">
+          {/* <div className="auth-eyebrow-pill">
+            <Icon name="sparkles" />
+            <span>WELCOME BACK TO YOUR WORKSPACE</span>
+          </div> */}
+
+          <h2>
+            Bring your experience.
+            <br />
+            <span className="auth-title-gradient">Find your direction.</span>
+          </h2>
+
+          <p className="auth-story-copy">
+            Sign in to access your ATS resume scores, skill match reports, and
+            application pipeline.
+          </p>
+
+          <div className="auth-feature-cards">
+            <div className="auth-feature-card">
+              <div className="auth-feature-icon">
+                <Icon name="document" />
+              </div>
+              <div>
+                <strong>ATS Resume Diagnostics</strong>
+                <p>Rule-based score &amp; OCR formatting check</p>
+              </div>
+            </div>
+
+            <div className="auth-feature-card">
+              <div className="auth-feature-icon">
+                <Icon name="match" />
+              </div>
+              <div>
+                <strong>Live Job Skill Coverage</strong>
+                <p>Required vs. preferred skill breakdown</p>
+              </div>
+            </div>
+
+            <div className="auth-feature-card">
+              <div className="auth-feature-icon">
+                <Icon name="applications" />
+              </div>
+              <div>
+                <strong>Unified Application Pipeline</strong>
+                <p>Track interview milestones in one place</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="auth-story-footer">
+          <span className="auth-footer-dot" />
+          <span>AI Resume Analyzer • Verified Workspace</span>
+        </div>
+      </aside>
+
+      {/* ─── Right Panel (Form) ─── */}
+      <div className="auth-content">{card}</div>
     </main>
   );
 }

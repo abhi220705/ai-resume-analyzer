@@ -139,13 +139,15 @@ test("API: oversized authentication bodies return 413", async () => {
   await response.text();
 });
 
-test("API: refresh without a cookie returns 401", async () => {
+test("API: refresh without a cookie returns an empty session", async () => {
   const response = await request("/api/auth/refresh", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: "{}",
   });
 
-  assert.equal(response.status, 401);
-  assert.equal((await response.json()).success, false);
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.success, true);
+  assert.equal(result.data.accessToken, null);
 });

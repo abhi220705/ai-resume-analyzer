@@ -30,7 +30,7 @@ export class ApiError extends Error {
 }
 
 let accessToken: string | null = null;
-let refreshPromise: Promise<string> | null = null;
+let refreshPromise: Promise<string | null> | null = null;
 
 export function setAccessToken(token: string | null) {
   accessToken = token;
@@ -116,9 +116,9 @@ if (isFormData) {
   }
 }
 
-export function refreshAccessToken(): Promise<string> {
+export function refreshAccessToken(): Promise<string | null> {
   if (!refreshPromise) {
-    refreshPromise = apiRequest<{ accessToken: string }>(
+    refreshPromise = apiRequest<{ accessToken: string | null }>(
       "/api/auth/refresh",
       {
         method: "POST",
@@ -146,6 +146,9 @@ export async function authenticatedRequest<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const token = accessToken ?? (await refreshAccessToken());
+  if (!token) {
+    throw new ApiError("Please log in again.", 401);
+  }
 
   function send(currentToken: string) {
     const headers = new Headers(options.headers);
@@ -162,6 +165,9 @@ export async function authenticatedRequest<T>(
     }
 
     const refreshedToken = await refreshAccessToken();
+    if (!refreshedToken) {
+      throw error;
+    }
     return send(refreshedToken);
   }
 }

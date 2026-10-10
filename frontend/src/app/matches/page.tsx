@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { PageHeading, Icon } from "@/components/ui";
+import { SelectField, type SelectOption } from "@/components/select";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
@@ -122,7 +123,7 @@ function SkillList({
           {skills.map((skill) => (
             <li
               key={skill}
-              className="rounded-full bg-stone-100 px-3 py-1 text-sm"
+              className="inline-flex items-center self-start rounded-full bg-stone-100 px-3 py-1 text-sm"
             >
               {skill}
             </li>
@@ -336,28 +337,29 @@ function MatchingWorkspace() {
         className="mt-6 rounded-xl border border-stone-200 bg-white p-6"
       >
         <fieldset disabled={disabled} className="space-y-6">
-          <label className="block font-semibold">
-            Choose a parsed resume
-            <select
+          <div className="block font-semibold">
+            <span id="match-resume-label">Choose a parsed resume</span>
+            <SelectField
               required
+              labelledBy="match-resume-label"
               value={resumeId}
-              onChange={(event) => {
-                setResumeId(event.target.value);
+              onChange={(next) => {
+                setResumeId(next);
                 setResult(null);
                 setError("");
               }}
-              className="ui-input mt-2 w-full"
-            >
-              <option value="">
-                {loadingResumes ? "Loading resumes..." : "Select a resume"}
-              </option>
-              {resumes.map((resume) => (
-                <option key={resume.id} value={resume.id}>
-                  {resume.originalName}
-                </option>
-              ))}
-            </select>
-          </label>
+              options={[
+                {
+                  value: "",
+                  label: loadingResumes ? "Loading resumes..." : "Select a resume",
+                },
+                ...resumes.map((resume) => ({
+                  value: resume.id,
+                  label: resume.originalName,
+                })),
+              ]}
+            />
+          </div>
 
           {!loadingResumes && !resumeError && resumes.length === 0 && (
             <p className="text-sm text-stone-600">
@@ -366,28 +368,29 @@ function MatchingWorkspace() {
             </p>
           )}
 
-          <label className="block font-semibold">
-            Choose a published job
-            <select
+          <div className="block font-semibold">
+            <span id="match-job-label">Choose a published job</span>
+            <SelectField
               required
+              labelledBy="match-job-label"
               value={jobId}
-              onChange={(event) => {
-                setJobId(event.target.value);
+              onChange={(next) => {
+                setJobId(next);
                 setResult(null);
                 setError("");
               }}
-              className="ui-input mt-2 w-full"
-            >
-              <option value="">
-                {loadingJobs ? "Loading jobs..." : "Select a job"}
-              </option>
-              {jobs.map((job) => (
-                <option key={job.id} value={job.id}>
-                  {job.title} — {job.company.name} — {job.location}
-                </option>
-              ))}
-            </select>
-          </label>
+              options={[
+                {
+                  value: "",
+                  label: loadingJobs ? "Loading jobs..." : "Select a job",
+                },
+                ...jobs.map((job) => ({
+                  value: job.id,
+                  label: `${job.title} — ${job.company.name} — ${job.location}`,
+                })),
+              ]}
+            />
+          </div>
 
           {!loadingJobs && !jobError && jobs.length === 0 && (
             <p className="text-sm text-stone-600">

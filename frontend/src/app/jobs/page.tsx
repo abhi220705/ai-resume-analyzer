@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { PageHeading, StatusBadge } from "@/components/ui";
+import { SelectField, type SelectOption } from "@/components/select";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
@@ -35,6 +36,19 @@ type JobList = {
 
 const inputClass =
   "ui-input";
+
+const EMPLOYMENT_TYPE_OPTIONS: SelectOption[] = [
+  { value: "FULL_TIME", label: "Full time" },
+  { value: "PART_TIME", label: "Part time" },
+  { value: "INTERNSHIP", label: "Internship" },
+  { value: "CONTRACT", label: "Contract" },
+];
+
+const WORK_MODE_OPTIONS: SelectOption[] = [
+  { value: "ON_SITE", label: "On site" },
+  { value: "HYBRID", label: "Hybrid" },
+  { value: "REMOTE", label: "Remote" },
+];
 
 const buttonClass =
   "ui-button";
@@ -335,32 +349,25 @@ function JobWorkspace({ isRecruiter }: { isRecruiter: boolean }) {
               </label>
 
               <div className="grid gap-5 sm:grid-cols-2">
-                <label className="block font-semibold">
-                  Employment type
-                  <select
+                <div className="block font-semibold">
+                  <span id="employmentType-label">Employment type</span>
+                  <SelectField
                     name="employmentType"
+                    labelledBy="employmentType-label"
                     defaultValue={editing?.employmentType ?? "FULL_TIME"}
-                    className={inputClass}
-                  >
-                    <option value="FULL_TIME">Full time</option>
-                    <option value="PART_TIME">Part time</option>
-                    <option value="INTERNSHIP">Internship</option>
-                    <option value="CONTRACT">Contract</option>
-                  </select>
-                </label>
+                    options={EMPLOYMENT_TYPE_OPTIONS}
+                  />
+                </div>
 
-                <label className="block font-semibold">
-                  Work mode
-                  <select
+                <div className="block font-semibold">
+                  <span id="workMode-label">Work mode</span>
+                  <SelectField
                     name="workMode"
+                    labelledBy="workMode-label"
                     defaultValue={editing?.workMode ?? "ON_SITE"}
-                    className={inputClass}
-                  >
-                    <option value="ON_SITE">On site</option>
-                    <option value="HYBRID">Hybrid</option>
-                    <option value="REMOTE">Remote</option>
-                  </select>
-                </label>
+                    options={WORK_MODE_OPTIONS}
+                  />
+                </div>
               </div>
 
               <label className="block font-semibold">
