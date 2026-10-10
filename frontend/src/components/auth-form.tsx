@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { Brand, Icon } from "@/components/ui";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { apiRequest } from "@/lib/api";
 
 const inputClass =
-  "mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 " +
-  "outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100";
+  "ui-input";
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const router = useRouter();
@@ -18,6 +18,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const isRegister = mode === "register" && !registered;
 
@@ -102,21 +103,28 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   }
 
   return (
-    <main className="mx-auto max-w-lg px-6 py-12">
-      <Link href="/" className="font-semibold text-indigo-700">
-        ← AI Resume Analyzer
-      </Link>
-
-      <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <p className="text-sm font-semibold text-indigo-600">
-          YOUR NEXT OPPORTUNITY
-        </p>
-
-        <h1 className="mt-3 text-3xl font-bold">
+    <main className="auth-page">
+      <aside className="auth-story">
+        <Link href="/"><Brand /></Link>
+        <div className="auth-story-content">
+          <p className="ui-eyebrow mb-5">Every next step starts somewhere</p>
+          <h2>Bring your experience.<br />Find your direction.</h2>
+          <p>A thoughtful workspace to understand your resume, discover opportunities, and manage what comes next.</p>
+          <div className="auth-feature"><Icon name="document" />Resume analysis with explanations</div>
+          <div className="auth-feature"><Icon name="match" />Clear, skill-based job comparisons</div>
+          <div className="auth-feature"><Icon name="applications" />Applications organized in one place</div>
+        </div>
+        <p className="auth-story-footer">AI Resume Analyzer & Job Match Platform</p>
+      </aside>
+      <div className="auth-content">
+      <section className="auth-card">
+        <Link href="/" className="auth-mobile-brand"><Brand /></Link>
+        <p className="ui-eyebrow">{isRegister ? "A fresh start" : "Your workspace awaits"}</p>
+        <h1 className="mt-3">
           {isRegister ? "Create your account" : "Welcome back"}
         </h1>
 
-        <p className="mt-3 text-slate-600">
+        <p className="mt-3">
           {isRegister
             ? "Join as a candidate or recruiter."
             : "Sign in to continue to your account."}
@@ -148,6 +156,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         )}
 
         <form
+          aria-busy={busy}
           onSubmit={handleSubmit}
           aria-describedby={error ? "form-error" : undefined}
           className="mt-6"
@@ -208,19 +217,19 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
               <label htmlFor="password" className="text-sm font-semibold">
                 Password
               </label>
-              <input
+              <div className="password-wrap"><input
                 key={isRegister ? "new-password" : "login-password"}
                 id="password"
                 name="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete={isRegister ? "new-password" : "current-password"}
                 required
                 minLength={isRegister ? 12 : 1}
                 aria-describedby={isRegister ? "password-help" : undefined}
                 className={inputClass}
-              />
+              /><button type="button" className="password-toggle" aria-controls="password" aria-pressed={showPassword} onClick={() => setShowPassword((value) => !value)}>{showPassword ? "Hide" : "Show"}</button></div>
               {isRegister && (
-                <p id="password-help" className="mt-2 text-xs text-slate-500">
+                <p id="password-help" className="mt-2 text-xs text-stone-500">
                   At least 12 characters; maximum 72 UTF-8 bytes.
                 </p>
               )}
@@ -248,7 +257,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-600 disabled:opacity-60"
+              className="ui-button ui-button-primary w-full"
             >
               {busy
                 ? "Please wait…"
@@ -259,7 +268,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           </fieldset>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-600">
+        <p className="mt-6 text-center text-sm text-stone-600">
           {isRegister ? "Already have an account? " : "New here? "}
           <Link
             href={isRegister ? "/login" : "/register"}
@@ -267,12 +276,13 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
               setRegistered(false);
               setError("");
             }}
-            className="font-semibold text-indigo-700"
+            className="font-semibold text-teal-700"
           >
             {isRegister ? "Log in" : "Create an account"}
           </Link>
         </p>
       </section>
+      </div>
     </main>
   );
 }

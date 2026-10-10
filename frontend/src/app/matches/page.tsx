@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PageHeading, Icon } from "@/components/ui";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
@@ -66,7 +67,7 @@ type MatchResult = {
 };
 
 const buttonClass =
-  "rounded-xl border border-slate-300 bg-white px-4 py-2 font-semibold hover:bg-slate-50 disabled:opacity-50";
+  "ui-button";
 
 export default function MatchesPage() {
   const router = useRouter();
@@ -78,7 +79,7 @@ export default function MatchesPage() {
 
   if (loading || !user) {
     return (
-      <main className="grid min-h-screen place-items-center">
+      <main className="ui-empty">
         <p role="status">Checking your session...</p>
       </main>
     );
@@ -86,14 +87,14 @@ export default function MatchesPage() {
 
   if (user.role !== "CANDIDATE") {
     return (
-      <main className="mx-auto max-w-3xl px-6 py-12">
+      <main className="ui-page">
         <h1 className="text-2xl font-bold">Candidate feature</h1>
         <p className="mt-3">
           Resume matching is available to candidate accounts.
         </p>
         <Link
           href="/dashboard"
-          className="mt-6 inline-block font-semibold text-indigo-700"
+          className="mt-6 inline-block font-semibold text-teal-700"
         >
           Back to dashboard
         </Link>
@@ -114,21 +115,21 @@ function SkillList({
   emptyMessage: string;
 }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4">
+    <section className="ui-panel">
       <h3 className="font-bold">{title}</h3>
       {skills.length > 0 ? (
         <ul className="mt-3 flex flex-wrap gap-2">
           {skills.map((skill) => (
             <li
               key={skill}
-              className="rounded-full bg-slate-100 px-3 py-1 text-sm"
+              className="rounded-full bg-stone-100 px-3 py-1 text-sm"
             >
               {skill}
             </li>
           ))}
         </ul>
       ) : (
-        <p className="mt-2 text-sm text-slate-600">{emptyMessage}</p>
+        <p className="mt-2 text-sm text-stone-600">{emptyMessage}</p>
       )}
     </section>
   );
@@ -288,18 +289,8 @@ function MatchingWorkspace() {
   }
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-10">
-      <nav className="flex gap-5 font-semibold text-indigo-700">
-        <Link href="/dashboard">Dashboard</Link>
-        <Link href="/jobs">Browse jobs</Link>
-      </nav>
-
-      <h1 className="mt-8 text-3xl font-bold">Match your resume to a job</h1>
-      <p className="mt-3 leading-7 text-slate-600">
-        Compare skill mentions in your resume with a published job.
-        See which required and preferred skills were detected.
-      </p>
-
+    <main className="ui-page">
+      <PageHeading eyebrow="Understand the overlap" title="Match your skills to the role" description="Compare skill mentions in your resume with a published job. See what matches and what needs a closer look." />
       <button
         type="button"
         disabled={disabled}
@@ -323,7 +314,7 @@ function MatchingWorkspace() {
         </div>
       )}
 
-      <form onSubmit={searchJobs} className="mt-6 flex flex-wrap gap-3">
+      <form onSubmit={searchJobs} className="ui-toolbar">
         <label className="min-w-0 flex-1">
           <span className="sr-only">Search jobs</span>
           <input
@@ -332,7 +323,7 @@ function MatchingWorkspace() {
             disabled={disabled}
             maxLength={100}
             placeholder="Search job title, company, or location"
-            className="w-full rounded-xl border border-slate-300 px-4 py-3"
+            className="ui-input w-full"
           />
         </label>
         <button type="submit" disabled={disabled} className={buttonClass}>
@@ -340,9 +331,9 @@ function MatchingWorkspace() {
         </button>
       </form>
 
-      <form
+      <div className="matching-layout"><form
         onSubmit={compareResume}
-        className="mt-6 rounded-2xl border border-slate-200 bg-white p-6"
+        className="mt-6 rounded-xl border border-stone-200 bg-white p-6"
       >
         <fieldset disabled={disabled} className="space-y-6">
           <label className="block font-semibold">
@@ -355,7 +346,7 @@ function MatchingWorkspace() {
                 setResult(null);
                 setError("");
               }}
-              className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3"
+              className="ui-input mt-2 w-full"
             >
               <option value="">
                 {loadingResumes ? "Loading resumes..." : "Select a resume"}
@@ -369,7 +360,7 @@ function MatchingWorkspace() {
           </label>
 
           {!loadingResumes && !resumeError && resumes.length === 0 && (
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-stone-600">
               No parsed resumes were found among your latest 50 uploads.
               Open the dashboard, upload a resume, and click Extract text.
             </p>
@@ -385,7 +376,7 @@ function MatchingWorkspace() {
                 setResult(null);
                 setError("");
               }}
-              className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3"
+              className="ui-input mt-2 w-full"
             >
               <option value="">
                 {loadingJobs ? "Loading jobs..." : "Select a job"}
@@ -399,12 +390,12 @@ function MatchingWorkspace() {
           </label>
 
           {!loadingJobs && !jobError && jobs.length === 0 && (
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-stone-600">
               No published jobs found on this page. Try another search.
             </p>
           )}
 
-          <div className="flex items-center gap-4">
+          <div className="ui-pagination">
             <button
               type="button"
               disabled={disabled || page === 1}
@@ -435,34 +426,30 @@ function MatchingWorkspace() {
           <button
             type="submit"
             disabled={disabled || !resumeId || !jobId || Boolean(resumeError || jobError)}
-            className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="ui-button ui-button-primary"
           >
             {busy ? "Comparing..." : "Calculate skill match"}
           </button>
         </fieldset>
       </form>
+      <aside className="matching-guide"><Icon name="match" /><h2>A comparison you can understand.</h2><p>Skill mentions help you explore a role. They do not measure proficiency or predict hiring outcomes.</p><ol><li><span>1</span>Choose a resume with extracted text.</li><li><span>2</span>Select a published opportunity.</li><li><span>3</span>Review required and preferred skill coverage.</li></ol><p>Check experience, location, and other requirements separately.</p></aside></div>
 
       {busy && <p role="status" className="mt-4">Calculating your match...</p>}
 
       {result && (
         <section
           aria-label="Skill match result"
-          className="mt-8 rounded-2xl border border-indigo-200 bg-indigo-50 p-6"
+          className="ui-panel mt-8"
         >
           <h2 className="text-2xl font-bold">Skill match result</h2>
-          <p className="mt-2 break-words text-slate-700">
+          <p className="mt-2 break-words text-stone-700">
             {result.resume.originalName}
           </p>
           <p className="mt-1 break-words font-semibold">
             {result.job.title} at {result.job.company.name}
           </p>
 
-          <p className="mt-5 text-5xl font-bold text-indigo-700">
-            {result.match.score}/100
-          </p>
-          <p className="mt-3 text-sm leading-6 text-slate-700">
-            {result.match.explanation}
-          </p>
+          <div className="score-overview"><div className="score-ring"><div><strong>{result.match.score}</strong><small>out of 100</small></div></div><div className="min-w-0 flex-1"><h3>Skill coverage score</h3><p className="mt-2 text-sm text-stone-600">{result.match.explanation}</p><p className="mt-2 text-xs text-stone-600">This is not a hiring probability or proof of candidate suitability.</p></div></div>
 
           <div className="mt-5 rounded-xl bg-white p-4 text-sm">
             <p>
@@ -515,12 +502,12 @@ function MatchingWorkspace() {
             <p className="mt-1 text-sm">
               Work mode: {result.otherRequirements.workMode.toLowerCase().replaceAll("_", " ")}
             </p>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-stone-600">
               These requirements were not assessed by this skill comparison.
             </p>
           </section>
 
-          <details className="mt-5 text-sm text-slate-700">
+          <details className="mt-5 text-sm text-stone-700">
             <summary className="cursor-pointer font-semibold">
               How to interpret this score
             </summary>

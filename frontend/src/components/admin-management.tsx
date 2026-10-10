@@ -37,8 +37,7 @@ type ListData = {
 type View = "users" | "companies";
 
 const buttonClass =
-  "rounded-lg border border-slate-300 px-4 py-2 font-semibold " +
-  "hover:bg-slate-100 disabled:opacity-50";
+  "ui-button";
 
 export function AdminManagement() {
   const [view, setView] = useState<View>("users");
@@ -47,7 +46,7 @@ export function AdminManagement() {
     <section className="space-y-5">
       <h2 className="text-2xl font-bold">Platform management</h2>
 
-      <div className="flex gap-3">
+      <div className="ui-segmented">
         {(["users", "companies"] as const).map((item) => (
           <button
             key={item}
@@ -55,7 +54,7 @@ export function AdminManagement() {
             aria-pressed={view === item}
             onClick={() => setView(item)}
             className={`${buttonClass} ${
-              view === item ? "bg-indigo-50 text-indigo-700" : "bg-white"
+              view === item ? "bg-teal-50 text-teal-800" : "bg-white"
             }`}
           >
             {item === "users" ? "Users" : "Companies"}
@@ -159,7 +158,7 @@ function ManagementList({ view }: { view: View }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-slate-600">Page {page} · Up to 20 records</p>
+        <p className="text-stone-600">Page {page} · Up to 20 records</p>
         <button
           type="button"
           disabled={loading || Boolean(savingId)}
@@ -191,10 +190,10 @@ function ManagementList({ view }: { view: View }) {
       ) : data ? (
         <>
           {view === "users" ? (
-            <div className="overflow-x-auto rounded-xl border border-slate-200">
+            <div className="overflow-x-auto rounded-xl border border-stone-200">
               <table className="w-full text-left text-sm">
                 <caption className="sr-only">Registered platform users</caption>
-                <thead className="bg-slate-100">
+                <thead className="bg-stone-100">
                   <tr>
                     {["Name", "Email", "Role", "Joined"].map((heading) => (
                       <th key={heading} scope="col" className="p-3">
@@ -205,7 +204,7 @@ function ManagementList({ view }: { view: View }) {
                 </thead>
                 <tbody>
                   {data.users?.map((user) => (
-                    <tr key={user.id} className="border-t border-slate-200">
+                    <tr key={user.id} className="border-t border-stone-200">
                       <td className="p-3">{user.name}</td>
                       <td className="break-all p-3">{user.email}</td>
                       <td className="p-3">{user.role}</td>
@@ -229,10 +228,10 @@ function ManagementList({ view }: { view: View }) {
               {data.companies?.map((company) => (
                 <article
                   key={`${company.id}-${company.updatedAt}`}
-                  className="rounded-xl border border-slate-200 bg-white p-5"
+                  className="ui-panel"
                 >
                   <h3 className="text-xl font-bold">{company.name}</h3>
-                  <p className="mt-2 font-semibold text-indigo-700">
+                  <p className="mt-2 font-semibold text-teal-700">
                     {company.verificationStatus}
                   </p>
 
@@ -277,7 +276,7 @@ function ManagementList({ view }: { view: View }) {
                         <select
                           name="status"
                           defaultValue={company.verificationStatus}
-                          className="mt-2 rounded-lg border border-slate-300 bg-white p-2"
+                          className="ui-input mt-2"
                         >
                           <option value="UNVERIFIED">Unverified</option>
                           <option value="PENDING">Pending review</option>
@@ -292,7 +291,7 @@ function ManagementList({ view }: { view: View }) {
                     </fieldset>
                   </form>
 
-                  <p className="mt-3 text-xs text-slate-600">
+                  <p className="mt-3 text-xs text-stone-600">
                     Mark verified only after reviewing the company. Editing
                     company details later resets its status to unverified.
                   </p>

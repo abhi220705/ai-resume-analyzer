@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PageHeading, StatusBadge } from "@/components/ui";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
@@ -33,10 +34,10 @@ type JobList = {
 };
 
 const inputClass =
-  "mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3";
+  "ui-input";
 
 const buttonClass =
-  "rounded-xl border border-slate-300 bg-white px-4 py-2 font-semibold hover:bg-slate-50 disabled:opacity-50";
+  "ui-button";
 
 function readable(value: string) {
   return value.toLowerCase().replaceAll("_", " ");
@@ -52,7 +53,7 @@ export default function JobsPage() {
 
   if (loading || !user) {
     return (
-      <main className="grid min-h-screen place-items-center">
+      <main className="ui-empty">
         <p role="status">Checking your session...</p>
       </main>
     );
@@ -246,38 +247,10 @@ function JobWorkspace({ isRecruiter }: { isRecruiter: boolean }) {
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10">
-      <nav className="flex flex-wrap gap-4 text-sm font-semibold text-indigo-700">
-        <Link href="/dashboard">Back to dashboard</Link>
-        {isRecruiter && (
-          <Link href="/recruiter">Manage company</Link>
-        )}
-      </nav>
-
-      <header className="mt-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">
-            {mine ? "Manage your jobs" : "Browse jobs"}
-          </h1>
-          <p className="mt-2 text-slate-600">
-            {mine
-              ? "Create drafts, publish opportunities, and close filled roles."
-              : "Explore published opportunities and their required skills."}
-          </p>
-        </div>
-
-        {isRecruiter && (
-          <button
-            type="button"
-            disabled={disabled || editorOpen}
-            onClick={() => switchView(!mine)}
-            className={buttonClass}
-          >
-            {mine ? "Browse published jobs" : "Manage my jobs"}
-          </button>
-        )}
-      </header>
-
+    <main className="ui-page">
+      <PageHeading eyebrow={mine ? "Recruiter workspace" : "Discover opportunities"} title={mine ? "Manage your jobs" : "Find your next opportunity"} description={mine ? "Draft, publish, and manage opportunities for your company." : "Explore roles, understand their requirements, and decide what comes next."}>
+        {isRecruiter && <button type="button" disabled={disabled || editorOpen} onClick={() => switchView(!mine)} className={buttonClass}>{mine ? "Browse published jobs" : "Manage my jobs"}</button>}
+      </PageHeading>
       {isRecruiter && mine && !editorOpen && (
         <button
           type="button"
@@ -288,7 +261,7 @@ function JobWorkspace({ isRecruiter }: { isRecruiter: boolean }) {
             setError("");
             setMessage("");
           }}
-          className="mt-6 rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white disabled:opacity-50"
+          className="ui-button ui-button-primary mt-6"
         >
           Create job
         </button>
@@ -307,11 +280,11 @@ function JobWorkspace({ isRecruiter }: { isRecruiter: boolean }) {
       )}
 
       {editorOpen && mine && (
-        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6">
+        <section className="ui-panel mt-6">
           <h2 className="text-xl font-bold">
             {editing ? "Edit job" : "New job draft"}
           </h2>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-stone-600">
             Your company profile must exist before you can create a job.
           </p>
 
@@ -427,7 +400,7 @@ function JobWorkspace({ isRecruiter }: { isRecruiter: boolean }) {
                 />
               </label>
 
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-stone-600">
                 Up to 30 skills per list, 60 characters per skill.
                 Use different skills in the required and preferred lists.
               </p>
@@ -435,7 +408,7 @@ function JobWorkspace({ isRecruiter }: { isRecruiter: boolean }) {
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white disabled:opacity-50"
+                  className="ui-button ui-button-primary"
                 >
                   {busy === "save"
                     ? "Saving..."
@@ -459,7 +432,7 @@ function JobWorkspace({ isRecruiter }: { isRecruiter: boolean }) {
         </section>
       )}
 
-      <form onSubmit={searchJobs} className="mt-8 flex flex-wrap gap-3">
+      <form onSubmit={searchJobs} className="ui-toolbar">
         <label className="min-w-0 flex-1">
           <span className="sr-only">Search jobs</span>
           <input
@@ -470,7 +443,7 @@ function JobWorkspace({ isRecruiter }: { isRecruiter: boolean }) {
             placeholder={
               mine ? "Search your job titles" : "Search title, company, or location"
             }
-            className="w-full rounded-xl border border-slate-300 px-4 py-3"
+            className="ui-input w-full"
           />
         </label>
         <button
@@ -497,39 +470,32 @@ function JobWorkspace({ isRecruiter }: { isRecruiter: boolean }) {
           {loadError} Use Refresh to try again.
         </p>
       ) : jobs.length === 0 ? (
-        <p className="mt-6 text-slate-600">
+        <p className="ui-empty">
           No jobs found on this page.
         </p>
       ) : (
-        <ul className="mt-6 space-y-5">
+        <ul className="jobs-grid">
           {jobs.map((job) => (
-            <li key={job.id} className="rounded-2xl border border-slate-200 bg-white p-6">
+            <li key={job.id} className="job-card"><div className="company-monogram" aria-hidden="true">{job.company.name.slice(0, 1)}</div>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h2 className="break-words text-xl font-bold">{job.title}</h2>
-                  <p className="mt-1 break-words text-slate-600">
+                  <p className="mt-1 break-words text-stone-600">
                     {job.company.name} | {job.location}
                   </p>
                 </div>
                 {mine && (
-                  <span className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-700">
-                    {readable(job.status)}
-                  </span>
+                  <StatusBadge value={job.status} />
                 )}
               </div>
 
-              <p className="mt-3 text-sm text-slate-600">
-                {readable(job.employmentType)} | {readable(job.workMode)}
-                {" | "}{job.minExperienceYears}+ years experience
-              </p>
+              <div className="job-meta"><span>{readable(job.employmentType)}</span><span>{readable(job.workMode)}</span><span>{job.minExperienceYears}+ years experience</span></div>
 
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-2 text-sm text-stone-600">
                 Company verification: {readable(job.company.verificationStatus)}
               </p>
 
-              <p className="mt-4 break-words text-sm">
-                <strong>Required:</strong> {job.requiredSkills.join(", ")}
-              </p>
+              <p className="ui-eyebrow mt-4">Required skills</p><div className="mt-2 flex flex-wrap gap-2">{job.requiredSkills.map((skill) => <span key={skill} className="ui-tag">{skill}</span>)}</div>
               {job.preferredSkills.length > 0 && (
                 <p className="mt-2 break-words text-sm">
                   <strong>Preferred:</strong> {job.preferredSkills.join(", ")}
@@ -537,10 +503,10 @@ function JobWorkspace({ isRecruiter }: { isRecruiter: boolean }) {
               )}
 
               <details className="mt-4">
-                <summary className="cursor-pointer font-semibold text-indigo-700">
+                <summary className="cursor-pointer font-semibold text-teal-700">
                   Read job description
                 </summary>
-                <p className="mt-3 whitespace-pre-wrap break-words leading-7 text-slate-700">
+                <p className="mt-3 whitespace-pre-wrap break-words leading-7 text-stone-700">
                   {job.description}
                 </p>
               </details>
@@ -590,7 +556,7 @@ function JobWorkspace({ isRecruiter }: { isRecruiter: boolean }) {
         </ul>
       )}
 
-      <div className="mt-6 flex items-center gap-4">
+      <div className="ui-pagination">
         <button
           type="button"
           disabled={disabled || editorOpen || page === 1}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/components/auth-provider";
+import { SiteChrome } from "@/components/site-chrome";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider><SiteChrome>{children}</SiteChrome></AuthProvider>
       </body>
     </html>
   );

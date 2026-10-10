@@ -1,57 +1,20 @@
 import Link from "next/link";
+import { Brand, Icon } from "@/components/ui";
 
 export default function HomePage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-5xl items-center px-6 py-12">
-      <section className="w-full rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-16">
-        <p className="text-sm font-bold tracking-widest text-indigo-600">
-          AI RESUME ANALYZER
-        </p>
-
-        <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-tight sm:text-6xl">
-          Your next opportunity starts with a stronger resume.
-        </h1>
-
-        <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-          A platform for candidates and recruiters. Create your account
-          today as we build resume analysis, explainable job matching,
-          and application tracking.
-        </p>
-
-        <div className="mt-9 flex flex-wrap gap-4">
-          <Link
-            href="/register"
-            className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
-          >
-            Create an account
-          </Link>
-
-          <Link
-            href="/login"
-            className="rounded-xl border border-slate-300 px-6 py-3 font-semibold hover:bg-slate-50"
-          >
-            Log in
-          </Link>
-        </div>
-
-        <div className="mt-12 grid gap-5 border-t border-slate-200 pt-8 sm:grid-cols-2">
-          <div>
-            <h2 className="font-bold">For candidates</h2>
-            <p className="mt-2 leading-7 text-slate-600">
-              Build your profile and prepare for upcoming resume
-              analysis and job discovery tools.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="font-bold">For recruiters</h2>
-            <p className="mt-2 leading-7 text-slate-600">
-              Create your account ahead of company profiles, job
-              posting, and applicant management.
-            </p>
-          </div>
-        </div>
-      </section>
+    <main className="public-page">
+      <div className="public-container">
+        <header className="public-nav"><Link href="/" aria-label="AI Resume Analyzer home"><Brand /></Link><nav className="public-links" aria-label="Website navigation"><a className="public-about" href="#how-it-works">How it works</a><Link className="public-login" href="/login">Log in</Link><Link className="ui-button ui-button-primary" href="/register">Get started <Icon name="arrow" /></Link></nav></header>
+        <section className="landing-hero">
+          <div><p className="ui-eyebrow">Your next chapter starts here</p><h1>A clearer resume.<br /><em>A better next step.</em></h1><p className="hero-copy">Understand your resume, compare your skills with real opportunities, and keep your applications in one place.</p><div className="hero-actions"><Link className="ui-button ui-button-primary" href="/register">Create your account <Icon name="arrow" /></Link><Link className="ui-button" href="/jobs">Explore jobs</Link></div><p className="hero-note">Built for candidates and the people who hire them.</p></div>
+          <div><div className="product-preview" aria-label="Illustrative skill comparison"><div className="preview-header"><span className="ui-eyebrow">A clearer picture</span><span>Skill comparison</span></div><div className="preview-document"><Icon name="document" /><div><strong>Your experience, made visible</strong><small>Resume skills → job requirements</small></div></div><div className="preview-row"><span>React</span><span className="ui-badge ui-badge-success"><Icon name="check" />Mention detected</span></div><div className="preview-row"><span>Node.js</span><span className="ui-badge ui-badge-success"><Icon name="check" />Mention detected</span></div><div className="preview-row"><span>PostgreSQL</span><span className="ui-badge ui-badge-pending">Not detected</span></div><div className="preview-note"><Icon name="match" /><span>See which skills appear in your resume and which requirements need a closer look.</span></div></div><p className="preview-label">Illustrative example. Your results depend on your resume and chosen job.</p></div>
+        </section>
+        <div className="feature-strip"><div><Icon name="document" /><div><strong>Understand your resume</strong><p>Readable, explained feedback</p></div></div><div><Icon name="match" /><div><strong>Compare the right skills</strong><p>Required and preferred coverage</p></div></div><div><Icon name="applications" /><div><strong>Keep track of progress</strong><p>Applications in one workspace</p></div></div></div>
+        <section id="how-it-works" className="public-section"><p className="ui-eyebrow">From resume to opportunity</p><h2>Less guesswork.<br />More useful information.</h2><div className="feature-grid"><article><p className="feature-number">01 / PREPARE</p><h3>Start with your story</h3><p>Build your profile and upload a PDF. Extract its text and review a rule-based report with a clear score breakdown.</p></article><article><p className="feature-number">02 / UNDERSTAND</p><h3>Look beyond the keywords</h3><p>Use OCR to read page images and compare them with PDF text. Differences are signals for review, not proof of dishonesty.</p></article><article><p className="feature-number">03 / EXPLORE</p><h3>Find your next opportunity</h3><p>Browse jobs, compare required skills, and apply with your chosen resume. Follow each application as its status changes.</p></article></div></section>
+        <section className="recruiter-banner"><div><p className="ui-eyebrow" style={{ color: "#bcd8c5" }}>For recruiters</p><h2 className="mt-3">Give your next hire a place to start.</h2><p>Create your company profile, publish opportunities, and review applications from one organized workspace.</p></div><Link className="ui-button" href="/register">Create a recruiter account <Icon name="arrow" /></Link></section>
+        <footer className="public-footer"><Brand /><p>Skill coverage and resume scores support review. They are not hiring predictions.</p><Link href="/login">Log in</Link></footer>
+      </div>
     </main>
   );
 }
