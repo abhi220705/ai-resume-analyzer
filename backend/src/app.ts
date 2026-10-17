@@ -18,23 +18,8 @@ import { resumeIntegrityRouter } from "./routes/resume-integrity.routes.js";
 import { adminRouter } from "./routes/admin.routes.js";
 import { adminActivityRouter } from "./routes/admin-activity.routes.js";
 
-
 export function createApp(frontendOrigin: string) {
   const app = express();
-
-app.use((request, _response, next) => {
-  if (
-    request.path === "/api/health" &&
-    request.query.proxycheck === "1"
-  ) {
-    console.log("Proxy diagnostic:", JSON.stringify({
-      remoteAddress: request.socket.remoteAddress,
-      forwardedFor: request.get("x-forwarded-for"),
-      forwarded: request.get("forwarded"),
-    }));
-  }
-  next();
-});
 
   app.disable("x-powered-by");
   app.use(helmet());
@@ -105,7 +90,7 @@ app.use((request, _response, next) => {
       }
     }
 
-      console.error("Unhandled request error:", {
+    console.error("Unhandled request error:", {
       name: error instanceof Error ? error.name : "UnknownError",
       code:
         error instanceof Error && "code" in error
