@@ -18,7 +18,6 @@ import { resumeIntegrityRouter } from "./routes/resume-integrity.routes.js";
 import { adminRouter } from "./routes/admin.routes.js";
 import { adminActivityRouter } from "./routes/admin-activity.routes.js";
 
-
 export function createApp(frontendOrigin: string) {
   const app = express();
 
@@ -91,10 +90,13 @@ export function createApp(frontendOrigin: string) {
       }
     }
 
-    console.error(
-      "Unhandled request error:",
-      error instanceof Error ? error.name : "UnknownError",
-    );
+    console.error("Unhandled request error:", {
+      name: error instanceof Error ? error.name : "UnknownError",
+      code:
+        error instanceof Error && "code" in error
+          ? String(error.code)
+          : "NO_CODE",
+    });
 
     response.status(500).json({
       success: false,

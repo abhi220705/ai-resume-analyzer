@@ -1,3 +1,7 @@
+import {
+  authRateLimitKey,
+  verifyProxyIdentity,
+} from "../lib/proxy-identity.js";
 import { requireAuth } from "../middleware/require-auth.js";
 import { randomBytes } from "node:crypto";
 import { Router } from "express";
@@ -18,14 +22,20 @@ import {
 
 export const authRouter = Router();
 
+// Prevent caching of authentication responses, including errors.
+authRouter.use((_request, response, next) => {
+  response.set("Cache-Control", "no-store");
+  next();
+});
+
+authRouter.use(verifyProxyIdentity);
+
 // Used when an email does not exist, so login still checks a hash.
 const dummyPasswordHash = await hashPassword(
   randomBytes(24).toString("hex"),
 );
 
 authRouter.use((request, response, next) => {
-  response.set("Cache-Control", "no-store");
-
   const origin = request.get("Origin");
 
   if (origin && origin !== process.env.FRONTEND_URL) {
@@ -50,6 +60,7 @@ authRouter.use((request, response, next) => {
 });
 
 const signupLimiter = rateLimit({
+  keyGenerator: authRateLimitKey,
   windowMs: 15 * 60 * 1000,
   limit: 10,
   standardHeaders: "draft-8",
@@ -62,6 +73,7 @@ const signupLimiter = rateLimit({
 });
 
 const loginLimiter = rateLimit({
+  keyGenerator: authRateLimitKey,
   windowMs: 15 * 60 * 1000,
   limit: 20,
   standardHeaders: "draft-8",
@@ -69,6 +81,19 @@ const loginLimiter = rateLimit({
   message: {
     success: false,
     message: "Too many login attempts. Try again later.",
+    errors: [],
+  },
+});
+
+const refreshLimiter = rateLimit({
+  keyGenerator: authRateLimitKey,
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many refresh attempts. Try again later.",
     errors: [],
   },
 });
@@ -220,18 +245,6 @@ authRouter.get("/me", requireAuth, (_request, response) => {
       user: response.locals.auth.user,
     },
   });
-});
-
-const refreshLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 60,
-  standardHeaders: "draft-8",
-  legacyHeaders: false,
-  message: {
-    success: false,
-    message: "Too many refresh attempts. Try again later.",
-    errors: [],
-  },
 });
 
 authRouter.post("/refresh", refreshLimiter, async (request, response) => {
