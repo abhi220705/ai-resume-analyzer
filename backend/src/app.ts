@@ -1,3 +1,4 @@
+import { resumeAiRouter } from "./routes/resume-ai.routes.js";
 import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -41,6 +42,7 @@ export function createApp(frontendOrigin: string) {
   app.use("/api/profile", profileRouter);
   app.use("/api/resumes", resumeRouter);
   app.use("/api/resumes", resumeOcrRouter);
+  app.use("/api/resumes", resumeAiRouter);
   app.use("/api/recruiter", recruiterRouter);
   app.use("/api/company", companyRouter);
   app.use("/api/jobs", jobRouter);
