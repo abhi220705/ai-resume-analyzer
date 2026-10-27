@@ -72,6 +72,8 @@ model User {
   postedJobs       Job[]             @relation("JobCreator")
   applications     Application[]
 
+  resumeDrafts ResumeDraft[]
+
   @@map("users")
 }
 
@@ -261,4 +263,20 @@ model Application {
   @@index([jobId, createdAt, id])
   @@index([resumeId])
   @@map("applications")
+}
+
+model ResumeDraft {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @db.Uuid
+  title           String   @db.VarChar(100)
+  data            Json
+  photoStorageKey String?  @db.VarChar(255)
+  revision        Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt, id])
+  @@map("resume_drafts")
 }

@@ -52,6 +52,15 @@ function DashboardContent({ user }: { user: User }) {
   return <main className="ui-page">
     <PageHeading eyebrow={candidate ? "Your career workspace" : recruiter ? "Your hiring workspace" : "Platform workspace"} title={`Welcome back, ${user.name}`} description={candidate ? "Make progress on your profile, your resume, and your next opportunity." : "Everything you need to review, organize, and move forward."} />
     {candidate ? <>
+      <div className="mb-6 flex justify-end">
+        <Link
+          href="/dashboard/resume-builder"
+          className="ui-button ui-button-primary"
+        >
+          <Icon name="document" />
+          Build Resume
+        </Link>
+      </div>
       <section className="workflow-banner" aria-label="Resume workflow">
         <div><h2>Your next opportunity starts with a clearer resume.</h2><p>Upload, understand, then compare. Take it one step at a time.</p><a href="#resume-tools" className="ui-button ui-button-primary mt-5">Open resume workspace <Icon name="arrow" /></a></div>
         <div className="workflow-steps"><div className="workflow-step"><span>01</span>Upload your PDF</div><div className="workflow-step"><span>02</span>Review your analysis</div><div className="workflow-step"><span>03</span>Compare job skills</div></div>
