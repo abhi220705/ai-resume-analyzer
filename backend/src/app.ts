@@ -1,3 +1,5 @@
+import { resumeBuilderAiRouter } from "./routes/resume-builder-ai.routes.js";
+import { resumeDraftRouter } from "./routes/resume-draft.routes.js";
 import { resumeAiRouter } from "./routes/resume-ai.routes.js";
 import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
@@ -34,12 +36,16 @@ export function createApp(frontendOrigin: string) {
 
   app.use("/api/jobs", express.json({ limit: "64kb" }));
   app.use("/api/applications", express.json({ limit: "32kb" }));
+  app.use("/api/resume-drafts", express.json({ limit: "1mb" }));
+  app.use("/api/resume-builder-ai", express.json({ limit: "32kb" }));
   app.use(express.json({ limit: "10kb" }));
   app.use(cookieParser());
 
   app.use("/api/health", healthRouter);
   app.use("/api/auth", authRouter);
   app.use("/api/profile", profileRouter);
+  app.use("/api/resume-builder-ai", resumeBuilderAiRouter);
+  app.use("/api/resume-drafts", resumeDraftRouter);
   app.use("/api/resumes", resumeRouter);
   app.use("/api/resumes", resumeOcrRouter);
   app.use("/api/resumes", resumeAiRouter);
